@@ -15,6 +15,7 @@ import (
 type gauss struct {
   GaussUserName string
   GaussPassword string
+  GaussHome string
 }
 
 func createSecret(secretString string, secretName string) (string) {
@@ -116,8 +117,10 @@ func gaussHandler(w http.ResponseWriter, r *http.Request) {
     deleteService("query")
     deleteSecret("GaussUserName")
     deleteSecret("GaussPassword")
+    deleteSecret("GaussHome")
     createSecret(r.FormValue("GaussUserName"),"GaussUserName")
     createSecret(r.FormValue("GaussPassword"),"GaussPassword")
+    createSecret(r.FormValue("GaussPassword"),"GaussHome")
     createService("query","gaussmeter/query")
   }
   f := gauss{r.FormValue("GaussUserName"), r.FormValue("GaussPassword")}
