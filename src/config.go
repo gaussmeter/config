@@ -123,7 +123,7 @@ func gaussHandler(w http.ResponseWriter, r *http.Request) {
     createSecret(r.FormValue("GaussPassword"),"GaussHome")
     createService("query","gaussmeter/query")
   }
-  f := gauss{r.FormValue("GaussUserName"), r.FormValue("GaussPassword")}
+  f := gauss{r.FormValue("GaussUserName"), r.FormValue("GaussPassword"), r.FormValue("GaussHome")}
   t, err := template.ParseFiles("gauss.html")
   if err != nil {
     log.Print(err)
