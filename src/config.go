@@ -43,12 +43,16 @@ func createService(serviceName string, imageName string) (string) {
   annotations := swarm.Annotations{Name:serviceName}
   serviceSpec.Annotations = annotations
   fileMode := os.FileMode(uint32(0))
-  secretReferenceFileTarget := &swarm.SecretReferenceFileTarget{"/secret/gaussPassword","0","0",fileMode}
+  secretReferenceFileTarget := &swarm.SecretReferenceFileTarget{"/var/run/secrets/password","0","0",fileMode}
   secret := &swarm.SecretReference{File:secretReferenceFileTarget,SecretID:getSecretID("GaussPassword"),SecretName:"GaussPassword"}
   serviceSpec.TaskTemplate.ContainerSpec.Secrets = append(serviceSpec.TaskTemplate.ContainerSpec.Secrets, secret)
 
-  secretReferenceFileTarget = &swarm.SecretReferenceFileTarget{"/secret/gaussUserName","0","0",fileMode}
+  secretReferenceFileTarget = &swarm.SecretReferenceFileTarget{"/var/run/secrets/email","0","0",fileMode}
   secret = &swarm.SecretReference{File:secretReferenceFileTarget,SecretID:getSecretID("GaussUserName"),SecretName:"GaussUserName"}
+  serviceSpec.TaskTemplate.ContainerSpec.Secrets = append(serviceSpec.TaskTemplate.ContainerSpec.Secrets, secret)
+
+  secretReferenceFileTarget = &swarm.SecretReferenceFileTarget{"/var/run/secrets/home","0","0",fileMode}
+  secret = &swarm.SecretReference{File:secretReferenceFileTarget,SecretID:getSecretID("GaussHome"),SecretName:"GaussHome"}
   serviceSpec.TaskTemplate.ContainerSpec.Secrets = append(serviceSpec.TaskTemplate.ContainerSpec.Secrets, secret)
 
   var serviceCreateOptions types.ServiceCreateOptions
