@@ -124,7 +124,7 @@ func gaussHandler(w http.ResponseWriter, r *http.Request) {
     deleteSecret("GaussHome")
     createSecret(r.FormValue("GaussUserName"),"GaussUserName")
     createSecret(r.FormValue("GaussPassword"),"GaussPassword")
-    createSecret(r.FormValue("GaussPassword"),"GaussHome")
+    createSecret(r.FormValue("GaussHome"),"GaussHome")
     createService("query","gaussmeter/query")
   }
   f := gauss{r.FormValue("GaussUserName"), r.FormValue("GaussPassword"), r.FormValue("GaussHome")}
