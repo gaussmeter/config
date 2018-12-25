@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/dgraph-io/badger"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
@@ -9,6 +10,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+)
+
+var (
+	DB *badger.DB
 )
 
 type gauss struct {
@@ -156,8 +161,10 @@ func gaussHandler(w http.ResponseWriter, r *http.Request) {
 		createSecret(r.FormValue("GaussPassword"), "GaussPassword")
 		createSecret(r.FormValue("GaussHome"), "GaussHome")
 		createService("query", "gaussmeter/query")
+		putValue("GaussUserName",r.FormValue("GaussUserName"))
+		putValue("GaussHome",r.FormValue("GaussHome"))
 	}
-	f := gauss{r.FormValue("GaussUserName"), r.FormValue("GaussPassword"), r.FormValue("GaussHome")}
+	f := gauss{getValue("GaussUserName"), "nope!", getValue("GaussHome")}
 	t, err := template.ParseFiles("gauss.html")
 	if err != nil {
 		log.Print(err)
@@ -168,7 +175,42 @@ func gaussHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func putValue(key string, val string) {
+	txn := DB.NewTransaction(true) // Read-write txn
+	err := txn.Set([]byte(key), []byte(val))
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = txn.Commit()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func getValue(key string) string{
+	txn := DB.NewTransaction(false)
+	item, err := txn.Get([]byte(key))
+	if err != nil {
+		log.Print(err)
+		return ""
+	}
+	val, err := item.ValueCopy(nil)
+	if err != nil {log.Fatal(err)}
+	return string(val)
+}
+
+
 func main() {
+	opts := badger.DefaultOptions
+	opts.Dir = "/tmp/badger"
+	opts.ValueDir = "/tmp/badger"
+	var err error
+	DB, err = badger.Open(opts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer DB.Close()
+
 	log.Print(getNetworkID("gaussnet"))
 	http.HandleFunc("/gauss", gaussHandler)
 	log.Fatal(http.ListenAndServeTLS(":8443", "server.crt", "server.key", nil))
