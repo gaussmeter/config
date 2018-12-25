@@ -2,14 +2,18 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/dgraph-io/badger"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
+	"github.com/gorilla/mux"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 var (
@@ -123,6 +127,27 @@ func getNetworkID(networkName string) string {
 	return ""
 }
 
+func getKeyFromURL(url string) string {
+	key := strings.Split(url, "/")
+	return key[2]
+}
+
+func badgerGet(w http.ResponseWriter, r *http.Request) {
+	key := getKeyFromURL(r.URL.String())
+	data := getValue(key)
+	fmt.Fprintf(w,"Key: %s Value: %s",key,data)
+	log.Printf("GET Key: %s Value: %s \n",key,data)
+}
+
+func badgerPut(w http.ResponseWriter, r *http.Request) {
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil { panic (err) }
+	key := getKeyFromURL(r.URL.String())
+	putValue(key,string(data))
+	fmt.Fprintf(w,"Key: %s Value: %s",key,data)
+	log.Printf("PUT Key: %s Value: %s \n",key,data)
+}
+
 func gaussHandler(w http.ResponseWriter, r *http.Request) {
 	if r.FormValue("submit") == "submit" {
 		log.Print("submit")
@@ -191,6 +216,11 @@ func main() {
 	}
 	defer CLI.Close()
 
-	http.HandleFunc("/gauss", gaussHandler)
+	rtr := mux.NewRouter()
+	rtr.HandleFunc("/gauss", gaussHandler)
+	rtr.HandleFunc("/badger/{name:[a-z]+}", badgerGet).Methods("GET")
+	rtr.HandleFunc("/badger/{name:[a-z]+}", badgerPut).Methods("PUT")
+	http.Handle("/", rtr)
+
 	log.Fatal(http.ListenAndServeTLS(":8443", "server.crt", "server.key", nil))
 }
