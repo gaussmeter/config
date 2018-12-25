@@ -14,6 +14,7 @@ import (
 
 var (
 	DB *badger.DB
+	CLI *client.Client
 )
 
 type gauss struct {
@@ -23,13 +24,9 @@ type gauss struct {
 }
 
 func createSecret(secretString string, secretName string) string {
-	cli, err := client.NewClientWithOpts(client.WithVersion("1.38"))
-	if err != nil {
-		panic(err)
-	}
 	secretannotation := swarm.Annotations{Name: secretName, Labels: nil}
 	secretdata := []byte(secretString)
-	response, err := cli.SecretCreate(context.Background(), swarm.SecretSpec{
+	response, err := CLI.SecretCreate(context.Background(), swarm.SecretSpec{
 		secretannotation, secretdata, nil, nil,
 	})
 	if err != nil {
@@ -40,10 +37,6 @@ func createSecret(secretString string, secretName string) string {
 }
 
 func createService(serviceName string, imageName string) string {
-	cli, err := client.NewClientWithOpts(client.WithVersion("1.38"))
-	if err != nil {
-		panic(err)
-	}
 
 	var serviceSpec swarm.ServiceSpec
 	containerSpec := &swarm.ContainerSpec{Image: imageName}
@@ -66,7 +59,7 @@ func createService(serviceName string, imageName string) string {
 	serviceSpec.TaskTemplate.ContainerSpec.Secrets = append(serviceSpec.TaskTemplate.ContainerSpec.Secrets, secret)
 
 	var serviceCreateOptions types.ServiceCreateOptions
-	response, err := cli.ServiceCreate(context.Background(), serviceSpec, serviceCreateOptions)
+	response, err := CLI.ServiceCreate(context.Background(), serviceSpec, serviceCreateOptions)
 	if err != nil {
 		log.Print(err)
 		return ""
@@ -75,33 +68,21 @@ func createService(serviceName string, imageName string) string {
 }
 
 func deleteSecret(secretName string) {
-	cli, err := client.NewClientWithOpts(client.WithVersion("1.38"))
-	if err != nil {
-		panic(err)
-	}
-	err = cli.SecretRemove(context.Background(), getSecretID(secretName))
+	err := CLI.SecretRemove(context.Background(), getSecretID(secretName))
 	if err != nil {
 		log.Print(err)
 	}
 }
 
 func deleteService(serviceName string) {
-	cli, err := client.NewClientWithOpts(client.WithVersion("1.38"))
-	if err != nil {
-		panic(err)
-	}
-	err = cli.ServiceRemove(context.Background(), getServiceID(serviceName))
+	err := CLI.ServiceRemove(context.Background(), getServiceID(serviceName))
 	if err != nil {
 		log.Print(err)
 	}
 }
 
 func getSecretID(secretName string) string {
-	cli, err := client.NewClientWithOpts(client.WithVersion("1.38"))
-	if err != nil {
-		panic(err)
-	}
-	secrets, err := cli.SecretList(context.Background(), types.SecretListOptions{})
+	secrets, err := CLI.SecretList(context.Background(), types.SecretListOptions{})
 	if err != nil {
 		log.Print(err)
 		return ""
@@ -115,11 +96,7 @@ func getSecretID(secretName string) string {
 }
 
 func getServiceID(secretName string) string {
-	cli, err := client.NewClientWithOpts(client.WithVersion("1.38"))
-	if err != nil {
-		panic(err)
-	}
-	services, err := cli.ServiceList(context.Background(), types.ServiceListOptions{})
+	services, err := CLI.ServiceList(context.Background(), types.ServiceListOptions{})
 	if err != nil {
 		log.Print(err)
 		return ""
@@ -133,11 +110,7 @@ func getServiceID(secretName string) string {
 }
 
 func getNetworkID(networkName string) string {
-	cli, err := client.NewClientWithOpts(client.WithVersion("1.38"))
-	if err != nil{
-		panic(err)
-	}
-	networks, err := cli.NetworkList(context.Background(), types.NetworkListOptions{})
+	networks, err := CLI.NetworkList(context.Background(), types.NetworkListOptions{})
 	if err != nil {
 		log.Print(err)
 		return ""
@@ -201,17 +174,23 @@ func getValue(key string) string{
 
 
 func main() {
+	var err error
+
 	opts := badger.DefaultOptions
 	opts.Dir = "/tmp/badger"
 	opts.ValueDir = "/tmp/badger"
-	var err error
 	DB, err = badger.Open(opts)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer DB.Close()
 
-	log.Print(getNetworkID("gaussnet"))
+	CLI, err = client.NewClientWithOpts(client.WithVersion("1.38"))
+	if err != nil {
+		panic(err)
+	}
+	defer CLI.Close()
+
 	http.HandleFunc("/gauss", gaussHandler)
 	log.Fatal(http.ListenAndServeTLS(":8443", "server.crt", "server.key", nil))
 }
