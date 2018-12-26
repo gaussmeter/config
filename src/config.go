@@ -127,13 +127,8 @@ func getNetworkID(networkName string) string {
 	return ""
 }
 
-func getKeyFromURL(url string) string {
-	key := strings.Split(url, "/")
-	return key[2]
-}
-
 func badgerGet(w http.ResponseWriter, r *http.Request) {
-	key := getKeyFromURL(r.URL.String())
+	key := mux.Vars(r)["key"]
 	data := getValue(key)
 	fmt.Fprintf(w,"Key: %s Value: %s",key,data)
 	log.Printf("GET Key: %s Value: %s \n",key,data)
@@ -142,7 +137,7 @@ func badgerGet(w http.ResponseWriter, r *http.Request) {
 func badgerPut(w http.ResponseWriter, r *http.Request) {
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil { panic (err) }
-	key := getKeyFromURL(r.URL.String())
+	key := mux.Vars(r)["key"]
 	putValue(key,string(data))
 	fmt.Fprintf(w,"Key: %s Value: %s",key,data)
 	log.Printf("PUT Key: %s Value: %s \n",key,data)
@@ -218,8 +213,8 @@ func main() {
 
 	rtr := mux.NewRouter()
 	rtr.HandleFunc("/gauss", gaussHandler)
-	rtr.HandleFunc("/badger/{name:[a-z]+}", badgerGet).Methods("GET")
-	rtr.HandleFunc("/badger/{name:[a-z]+}", badgerPut).Methods("PUT")
+	rtr.HandleFunc("/badger/{key}", badgerGet).Methods("GET")
+	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("PUT")
 	http.Handle("/", rtr)
 
 	log.Fatal(http.ListenAndServeTLS(":8443", "server.crt", "server.key", nil))
