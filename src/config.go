@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/dgraph-io/badger"
+	"github.com/dgraph-io/badger/options"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
@@ -198,6 +199,7 @@ func main() {
 	opts := badger.DefaultOptions
 	opts.Dir = "/tmp/badger"
 	opts.ValueDir = "/tmp/badger"
+	opts.ValueLogLoadingMode = options.FileIO
 	DB, err = badger.Open(opts)
 	if err != nil {
 		log.Fatal(err)
