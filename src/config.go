@@ -200,6 +200,9 @@ func main() {
 	opts.Dir = "/tmp/badger"
 	opts.ValueDir = "/tmp/badger"
 	opts.ValueLogLoadingMode = options.FileIO
+	opts.NumMemtables = 2
+	opts.NumLevelZeroTables = 2
+	opts.NumLevelZeroTablesStall = 4
 	DB, err = badger.Open(opts)
 	if err != nil {
 		log.Fatal(err)
