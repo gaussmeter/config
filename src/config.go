@@ -9,6 +9,7 @@ import (
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
 	"github.com/gorilla/mux"
+	"github.com/rs/xid"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -143,6 +144,17 @@ func badgerPut(w http.ResponseWriter, r *http.Request) {
 	log.Printf("PUT Key: %s Value: %s \n",key,data)
 }
 
+func secretPut(w http.ResponseWriter, r *http.Request) {
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil { panic(err) }
+	key := mux.Vars(r)["key"]
+  id := xid.New()
+	createSecret(string(data),id.String())
+  putValue(key,id.String())
+	fmt.Fprintf(w,"%s",id.String())
+	log.Printf("PUT Badger Key: %s Docker Secret: %s \n",key,id.String())
+}
+
 func gaussHandler(w http.ResponseWriter, r *http.Request) {
 	if r.FormValue("submit") == "submit" {
 		log.Print("submit")
@@ -220,6 +232,9 @@ func main() {
 	rtr.HandleFunc("/badger/{key}", badgerGet).Methods("GET")
 	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("PUT")
 	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("POST")
+	rtr.HandleFunc("/secret/{key}", badgerGet).Methods("GET")
+	rtr.HandleFunc("/secret/{key}", secretPut).Methods("PUT")
+	rtr.HandleFunc("/secret/{key}", secretPut).Methods("POST")
 	http.Handle("/", rtr)
 
 	log.Fatal(http.ListenAndServeTLS(":8443", "server.crt", "server.key", nil))
