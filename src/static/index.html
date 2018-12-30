@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- <meta charset="UTF-8"> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" crossorigin="anonymous">
+
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#Home">GaussMeter</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="#Home" >Home <span class="sr-only"></span></a>
+            </li>
+            <li class="nav-item">
+                <a data-toggle="modal" data-target="#configModal" class="nav-link" href="#Config" id="configModalBtn">Config</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+
+<!-- Config Modal -->
+<div class="modal fade" id="configModal" tabindex="-1" role="dialog" aria-labelledby="configModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="configModalLabel">Config</h5>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="formHomeInput">Home GPS location</label>
+                        <input type="text" class="form-control" id="formHomeInput" placeholder="123,456" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="formEmailInput">User Name</label>
+                        <input type="email" class="form-control" id="formEmailInput" placeholder="user@gamil.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="formPassowrdInput">Password</label>
+                        <input type="password" class="form-control" id="formPasswordInput" >
+                    </div>
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-info" id="save" > Save </button>
+                <button type="button" class="btn btn-primary" id="start"> Start Query </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="Home" >
+    <p>This is where the car's current state will display</p>
+    <!-- ToDo: I think the right answer is to pull in data via $.load() ... -->
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"  crossorigin="anonymous"></script>
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" crossorigin="anonymous"></script>  -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"  crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+
+<script  type = "text/javascript" language = "javascript">
+    $('#start').click(function() {
+      $.post("/start/query")
+    });
+    $('#configModal').on('shown.bs.modal',function(){
+        formHomeInput();
+        formEmailInput();
+        formPasswordInput();
+    });
+    $('#save').click(function() {
+       var GaussUserName = $('#formEmailInput').val();
+       var GaussPassword = $('#formPasswordInput').val();
+       var GaussHome = $('#formHomeInput').val();
+       if (GaussPassword.includes("docker-secret:") == false) {
+           if (GaussPassword.trim() !== "" ) {
+            $.post("/secret/GaussPassword", GaussPassword, function () {
+                formPasswordInput();
+            });
+        }
+       }
+       if (GaussUserName.trim() !== "" ) {
+           $.post("/badger/GaussUserName", GaussUserName, function() {
+               formEmailInput();
+           });
+       }
+       if (GaussHome.trim() !== "") {
+           $.post("/badger/GaussHome", GaussHome, function() {
+               formHomeInput();
+           });
+       }
+    });
+    //Todo: DRY these out..
+    function formEmailInput() {
+        $.get("/badger/GaussUserName", function (data, status) {
+            if (data) {
+                $('#formEmailInput').removeClass('is-invalid');
+                $('#formEmailInput').addClass('is-valid');
+                $('#formEmailInput').val(data);
+            } else {
+
+                $('#formEmailInput').removeClass('is-valid');
+                $('#formEmailInput').addClass('is-invalid');
+                $('#formEmailInput').val("");
+            }
+        });
+    }
+    function formHomeInput() {
+        $.get("/badger/GaussHome", function (data, status) {
+            if (data) {
+                $('#formHomeInput').removeClass('is-invalid');
+                $('#formHomeInput').addClass('is-valid');
+                $('#formHomeInput').val(data);
+            } else {
+                $('#formHomeInput').removeClass('is-valid');
+                $('#formHomeInput').addClass('is-invalid');
+                $('#formHomeInput').val("");
+            }
+        });
+    }
+    function formPasswordInput() {
+        $.get("/badger/GaussPassword", function(data, status) {
+            if (data) {
+                $('#formPasswordInput').removeClass('is-invalid');
+                $('#formPasswordInput').addClass('is-valid');
+                $('#formPasswordInput').val(data);
+            } else {
+                $('#formPasswordInput').removeClass('is-valid');
+                $('#formPasswordInput').addClass('is-invalid');
+                $('#formPasswordInput').val("");
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

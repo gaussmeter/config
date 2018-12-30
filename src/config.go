@@ -10,11 +10,11 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/gorilla/mux"
 	"github.com/rs/xid"
-	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 var (
@@ -52,7 +52,7 @@ func createService(serviceName string, imageName string) string {
 	serviceSpec.Annotations = annotations
 	fileMode := os.FileMode(uint32(0))
 	secretReferenceFileTarget := &swarm.SecretReferenceFileTarget{"/var/run/secrets/password", "0", "0", fileMode}
-	secret := &swarm.SecretReference{File: secretReferenceFileTarget, SecretID: getSecretID("GaussPassword"), SecretName: "GaussPassword"}
+	secret := &swarm.SecretReference{File: secretReferenceFileTarget, SecretID: getSecretID(strings.Split(getValue("GaussPassword"),"docker-secret:")[1]), SecretName: strings.Split(getValue("GaussPassword"),"docker-secret:")[1]}
 	serviceSpec.TaskTemplate.ContainerSpec.Secrets = append(serviceSpec.TaskTemplate.ContainerSpec.Secrets, secret)
 
 	secretReferenceFileTarget = &swarm.SecretReferenceFileTarget{"/var/run/secrets/email", "0", "0", fileMode}
@@ -136,6 +136,8 @@ func badgerGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func badgerPut(w http.ResponseWriter, r *http.Request) {
+	//ToDo: implement TTL https://github.com/dgraph-io/badger#setting-time-to-livettl-and-user-metadata-on-keys
+	// ?? use header TTL=Value ??
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil { panic (err) }
 	key := mux.Vars(r)["key"]
@@ -150,34 +152,26 @@ func secretPut(w http.ResponseWriter, r *http.Request) {
 	key := mux.Vars(r)["key"]
   id := xid.New()
 	createSecret(string(data),id.String())
-  putValue(key,id.String())
-	fmt.Fprintf(w,"%s",id.String())
+  putValue(key,"docker-secret:"+id.String())
+	fmt.Fprintf(w,"docker-secret:%s",id.String())
 	log.Printf("PUT Badger Key: %s Docker Secret: %s \n",key,id.String())
+  // ToDo: implement a metod for cleaning up old versions of secrets.
 }
 
-func gaussHandler(w http.ResponseWriter, r *http.Request) {
-	if r.FormValue("submit") == "submit" {
-		log.Print("submit")
+func startService(w http.ResponseWriter, r *http.Request) {
+	name := mux.Vars(r)["name"]
+	if name == "query" {
 		deleteService("query")
 		deleteSecret("GaussUserName")
-		deleteSecret("GaussPassword")
 		deleteSecret("GaussHome")
-		createSecret(r.FormValue("GaussUserName"), "GaussUserName")
-		createSecret(r.FormValue("GaussPassword"), "GaussPassword")
-		createSecret(r.FormValue("GaussHome"), "GaussHome")
+		createSecret(getValue("GaussUserName"), "GaussUserName")
+		createSecret(getValue("GaussHome"), "GaussHome")
 		createService("query", "gaussmeter/query")
-		putValue("GaussUserName",r.FormValue("GaussUserName"))
-		putValue("GaussHome",r.FormValue("GaussHome"))
+		fmt.Fprintf(w, "ok")
+	} else {
+		fmt.Fprintf(w, "nothing to start...")
 	}
-	f := gauss{getValue("GaussUserName"), "nope!", getValue("GaussHome")}
-	t, err := template.ParseFiles("gauss.html")
-	if err != nil {
-		log.Print(err)
-	}
-	err = t.Execute(w, f)
-	if err != nil {
-		log.Print(err)
-	}
+	log.Printf("Starting %s",name)
 }
 
 func putValue(key string, val string) {
@@ -228,14 +222,19 @@ func main() {
 	defer CLI.Close()
 
 	rtr := mux.NewRouter()
-	rtr.HandleFunc("/gauss", gaussHandler)
+	//rtr.HandleFunc("/gauss", gaussHandler)
 	rtr.HandleFunc("/badger/{key}", badgerGet).Methods("GET")
 	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("PUT")
 	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("POST")
 	rtr.HandleFunc("/secret/{key}", badgerGet).Methods("GET")
 	rtr.HandleFunc("/secret/{key}", secretPut).Methods("PUT")
 	rtr.HandleFunc("/secret/{key}", secretPut).Methods("POST")
+	rtr.HandleFunc("/start/{name}", startService).Methods("POST")
+	rtr.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 	http.Handle("/", rtr)
 
 	log.Fatal(http.ListenAndServeTLS(":8443", "server.crt", "server.key", nil))
 }
+
+// ToDo: implement https://github.com/dgraph-io/badger#garbage-collection
+// ToDo: add Gaussmeter fav icon
