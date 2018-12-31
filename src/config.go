@@ -244,6 +244,7 @@ func main() {
 
 	//Tesla's Freemont Factory
 	putDefault("home","37.4919392,-121.9469367")
+	putDefault("homeMaxDistFt","100")
 	putDefault("chargedRange", "270")
 	putDefault("shouldChargeRange","100")
 	putDefault("lowRange","30")
