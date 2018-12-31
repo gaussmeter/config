@@ -22,11 +22,6 @@ var (
 	CLI *client.Client
 )
 
-type gauss struct {
-	GaussUserName string
-	GaussPassword string
-	GaussHome     string
-}
 
 func createSecret(secretString string, secretName string) string {
 	secretannotation := swarm.Annotations{Name: secretName, Labels: nil}
@@ -132,7 +127,7 @@ func badgerGet(w http.ResponseWriter, r *http.Request) {
 	key := mux.Vars(r)["key"]
 	data := getValue(key)
 	fmt.Fprintf(w,"%s",data)
-	log.Printf("GET Key: %s Value: %s \n",key,data)
+	log.Printf("badger GET Key: %s Value: %s \n",key,data)
 }
 
 func badgerPut(w http.ResponseWriter, r *http.Request) {
@@ -143,7 +138,7 @@ func badgerPut(w http.ResponseWriter, r *http.Request) {
 	key := mux.Vars(r)["key"]
 	putValue(key,string(data))
 	fmt.Fprintf(w,"ok")
-	log.Printf("PUT Key: %s Value: %s \n",key,data)
+	log.Printf("badger PUT Key: %s Value: %s \n",key,data)
 }
 
 func secretPut(w http.ResponseWriter, r *http.Request) {
@@ -154,7 +149,7 @@ func secretPut(w http.ResponseWriter, r *http.Request) {
 	createSecret(string(data),id.String())
   putValue(key,"docker-secret:"+id.String())
 	fmt.Fprintf(w,"docker-secret:%s",id.String())
-	log.Printf("PUT Badger Key: %s Docker Secret: %s \n",key,id.String())
+	log.Printf("secret PUT Badger Key: %s Docker Secret: %s \n",key,id.String())
   // ToDo: implement a metod for cleaning up old versions of secrets.
 }
 
@@ -190,12 +185,38 @@ func getValue(key string) string{
 	txn := DB.NewTransaction(false)
 	item, err := txn.Get([]byte(key))
 	if err != nil {
-		log.Print(err)
+		log.Print(err.Error() + " - " + key)
+		return getDefault(key)
+	}
+	val, err := item.ValueCopy(nil)
+	if err != nil {log.Fatal(err)}
+	return string(val)
+}
+
+func getDefault(key string) string{
+	txn := DB.NewTransaction(false)
+	key = "default:"+key
+	item, err := txn.Get([]byte(key))
+	if err != nil {
+		log.Print(err.Error() + " - " + key )
 		return ""
 	}
 	val, err := item.ValueCopy(nil)
 	if err != nil {log.Fatal(err)}
 	return string(val)
+}
+
+func putDefault(key string, val string) {
+	txn := DB.NewTransaction(true) // Read-write txn
+	key = "default:"+key
+	err := txn.Set([]byte(key), []byte(val))
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = txn.Commit()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 
@@ -220,6 +241,12 @@ func main() {
 		panic(err)
 	}
 	defer CLI.Close()
+
+	//Tesla's Freemont Factory
+	putDefault("home","37.4919392,-121.9469367")
+	putDefault("chargedRange", "270")
+	putDefault("shouldChargeRange","100")
+	putDefault("lowRange","30")
 
 	rtr := mux.NewRouter()
 	//rtr.HandleFunc("/gauss", gaussHandler)
