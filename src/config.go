@@ -249,7 +249,6 @@ func main() {
 	putDefault("lowRange","30")
 
 	rtr := mux.NewRouter()
-	//rtr.HandleFunc("/gauss", gaussHandler)
 	rtr.HandleFunc("/badger/{key}", badgerGet).Methods("GET")
 	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("PUT")
 	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("POST")
