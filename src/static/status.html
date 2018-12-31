@@ -1,0 +1,63 @@
+<div class="container" id="status">
+    <table class="table table-striped ">
+        <tbody>
+        <tr>
+            <td>isHome</td>
+            <td><div id="isHome"></div> </td>
+        </tr>
+        <tr>
+            <td>isDriving</td>
+            <td><div id="isDriving"></div> </td>
+        </tr>
+        <tr>
+            <td>isCharging</td>
+            <td><div id="isCharging"></div> </td>
+        </tr>
+        <tr>
+            <td>range</td>
+            <td><div id="range"></div> </td>
+        </tr>
+        <tr>
+            <td>isCharged</td>
+            <td><div id="isCharged"></div> </td>
+        </tr>
+        <tr>
+            <td>shouldCharge</td>
+            <td><div id="shouldCharge"></div> </td>
+        </tr>
+        <tr>
+            <td>isLow</td>
+            <td><div id="isLow"></div> </td>
+        </tr>
+        <tr>
+            <td>currentStateKey</td>
+            <td><div id="currentStateKey">....</div> </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $( document ).ready(function() {
+        //console.log( "ready!" );
+        $.get("/badger/currentStateKey", function(currentStateKey) {
+            //console.log(currentStateKey);
+            $('#currentStateKey').text(currentStateKey);
+           $.getJSON("/badger/"+currentStateKey, function(currenState) {
+               console.log(currenState);
+               $('#isHome').text(currenState['vehicle_state']['isHome']);
+               $('#range').text(currenState['charge_state']['ideal_battery_range']);
+               if (currenState['drive_state']['shift_state'] == null) {
+                   $('#isDriving').text("false");
+               } else {
+                   $('#isDriving').text("true ("+currenState['drive_state']['shift_state']+")"  );
+               }
+               if (currenState['charge_state']['charge_rate'] > 0){
+                   $('#isCharging').text("true")
+               } else {
+                   $('#isCharging').text("false")
+               }
+           })
+        });
+    });
+</script>

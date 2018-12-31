@@ -18,7 +18,10 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
-                <a class="nav-link" href="#Home" >Home <span class="sr-only"></span></a>
+                <a class="nav-link" href="#status" id="statusBtn" >Status<span class="sr-only"></span></a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="#data" id="dataBtn" >Data<span class="sr-only"></span></a>
             </li>
             <li class="nav-item">
                 <a data-toggle="modal" data-target="#configModal" class="nav-link" href="#Config" id="configModalBtn">Config</a>
@@ -61,9 +64,8 @@
     </div>
 </div>
 
-<div class="container" id="Home" >
-    <p>This is where the car's current state will display</p>
-    <!-- ToDo: I think the right answer is to pull in data via $.load() ... -->
+<div class="container" id="main" >
+    <!-- nothing to see here... -->
 </div>
 
 
@@ -74,6 +76,9 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
 
 <script  type = "text/javascript" language = "javascript">
+    $( document ).ready(function() {
+        $('#main').load("status.html");
+    });
     $('#start').click(function() {
       $.post("/start/query")
     });
@@ -81,6 +86,12 @@
         formHomeInput();
         formEmailInput();
         formPasswordInput();
+    });
+    $('#statusBtn').click(function () {
+        $('#main').load("status.html");
+    });
+    $('#dataBtn').click(function () {
+        $('#main').load("data.html");
     });
     $('#save').click(function() {
        var GaussUserName = $('#formEmailInput').val();
