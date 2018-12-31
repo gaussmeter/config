@@ -38,25 +38,33 @@
 </div>
 
 <script>
+    function isDriving(shiftState) {
+        if (shiftState == null) {
+            return false;
+        } else
+            return true;
+    }
+    function isCharging(chargeRate) {
+        if (chargeRate > 0) {
+           return true;
+        } else {
+            return false;
+        }
+    }
     $( document ).ready(function() {
         //console.log( "ready!" );
         $.get("/badger/currentStateKey", function(currentStateKey) {
             //console.log(currentStateKey);
             $('#currentStateKey').text(currentStateKey);
-           $.getJSON("/badger/"+currentStateKey, function(currenState) {
-               console.log(currenState);
-               $('#isHome').text(currenState['vehicle_state']['isHome']);
-               $('#range').text(currenState['charge_state']['ideal_battery_range']);
-               if (currenState['drive_state']['shift_state'] == null) {
-                   $('#isDriving').text("false");
-               } else {
-                   $('#isDriving').text("true ("+currenState['drive_state']['shift_state']+")"  );
-               }
-               if (currenState['charge_state']['charge_rate'] > 0){
-                   $('#isCharging').text("true")
-               } else {
-                   $('#isCharging').text("false")
-               }
+           $.getJSON("/badger/"+currentStateKey, function(currentState) {
+               //console.log(currentState);
+               $('#isHome').text(currentState['vehicle_state']['isHome']);
+               $('#range').text(currentState['charge_state']['ideal_battery_range']);
+               $('#isDriving').text(isDriving(currentState['drive_state']['shift_state']));
+               $('#isCharging').text(isCharging(currentState['charge_state']['charge_rate']));
+               $('#isCharged').text(currentState['vehicle_state']['isCharged']);
+               $('#shouldCharge').text(currentState['vehicle_state']['shouldCharge']);
+               $('#isLow').text(currentState['vehicle_state']['isLow']);
            })
         });
     });
