@@ -1,0 +1,50 @@
+<div class="modal-body" id="modalBody">
+    <form>
+        <div class="form-group">
+            <label for="tChargeRangeFull"> Full Range (Miles) </label>
+            <input type="text" class="form-control" id="tChargeRangeFull" placeholder="270" value="">
+        </div>
+        <div class="form-group">
+            <label for="tChargeRangeMedium"> Medium Range (Miles) </label>
+            <input type="text" class="form-control" id="tChargeRangeMedium" placeholder="100" value="">
+        </div>
+        <div class="form-group">
+            <label for="tChargeRangeLow"> Low Range (Miles) </label>
+            <input type="text" class="form-control" id="tChargeRangeLow" placeholder="30" value="">
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-info" id="saveRange" > Save </button>
+    <button type="button" class="btn btn-primary" id="start"> Start Query </button>
+</div>
+<script>
+    $( document ).ready(function(){
+        manageFieldById('tChargeRangeFull');
+        manageFieldById('tChargeRangeMedium');
+        manageFieldById('tChargeRangeLow');
+    });
+    $('#saveRange').click(function() {
+        var tChargeRangeFull = $('#tChargeRangeFull').val();
+        var tChargeRangeMedium = $('#tChargeRangeMedium').val();
+        var tChargeRangeLow = $('#tChargeRangeLow').val();
+        if (tChargeRangeFull.trim() !== "" ) {
+            $.post("/badger/tChargeRangeFull", tChargeRangeFull, manageFieldById('tChargRangeFull'))
+        }
+        if (tChargeRangeMedium.trim() !== "" ) {
+            $.post("/badger/tChargeRangeMedium", tChargeRangeMedium, manageFieldById('tChargRangeMedium'))
+        }
+        if (tChargeRangeLow.trim() !== "" ) {
+            $.post("/badger/tChargeRangeLow", tChargeRangeLow, manageFieldById('tChargRangeLow'))
+        }
+    });
+    $('#start').click(function() {
+        $.post("/start/query")
+    });
+</script>
+<!--
+    putDefault("tChargeRangeFull", "270")
+	putDefault("tChargeRangeMedium","100")
+	putDefault("tChargeRangeLow","30")
+-->

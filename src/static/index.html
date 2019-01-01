@@ -21,13 +21,13 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
-                <a class="nav-link" href="#status" id="statusBtn" >Status<span class="sr-only"></span></a>
+                <a class="nav-link" href="#status" id="navStatus" >Status<span class="sr-only"></span></a>
             </li>
             <li class="nav-item active">
-                <a class="nav-link" href="#data" id="dataBtn" >Data<span class="sr-only"></span></a>
+                <a class="nav-link" href="#data" id="navData" >Data<span class="sr-only"></span></a>
             </li>
             <li class="nav-item">
-                <a data-toggle="modal" data-target="#configModal" class="nav-link" href="#Config" id="configModalBtn">Config</a>
+                <a data-toggle="modal" data-target="#configModal" class="nav-link" href="#Config" id="navConfig">Config</a>
             </li>
         </ul>
     </div>
@@ -39,30 +39,25 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="configModalLabel">Config</h5>
+                <!-- <h5 class="modal-title" id="configModalLabel">Config</h5> -->
+                <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                        <ul class="navbar-nav">
+                            <li class="nav-item active">
+                                <a class="nav-link" href="#" id="navAPI" >Tesla API</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" id="navLocations" >Locations</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" id="navRange" >Range</a>
+                            </li>
+                        </ul>
+                </nav>
             </div>
-            <div class="modal-body">
-                <form>
-                    <div class="form-group">
-                        <label for="fromHome">Home GPS location</label>
-                        <input type="text" class="form-control" id="tHome" placeholder="37.4919392,-121.9469367" value="">
-                    </div>
-                    <div class="form-group">
-                        <label for="formEmailAdr">User Name</label>
-                        <input type="email" class="form-control" id="tEmailAdr" placeholder="user@domain.com" value="" autocomplete="username">
-                    </div>
-                    <div class="form-group">
-                        <label for="formPassowrd">Password</label>
-                        <input type="password" class="form-control" id="tPassword" autocomplete="current-password">
-                    </div>
-                </form>
+            <div class="container" id="modalMain"> <!-- nothing to see here --> </div>
+            <!--
 
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-info" id="save" > Save </button>
-                <button type="button" class="btn btn-primary" id="start"> Start Query </button>
-            </div>
+            -->
         </div>
     </div>
 </div>
@@ -82,42 +77,28 @@
     $( document ).ready(function() {
         $('#main').load("status.html");
     });
-    $('#start').click(function() {
-      $.post("/start/query")
+    $('#configModal').on('shown.bs.modal', function (e) {
+        $('#modalMain').load("navAPI.html");
     });
-    $('#configModal').on('shown.bs.modal',function(){
-        manageFieldById('tEmailAdr');
-        manageFieldById('tPassword');
-        manageFieldById('tHome');
-    });
-    $('#statusBtn').click(function () {
+    $('#navStatus').click(function () {
         $('#main').load("status.html");
     });
-    $('#dataBtn').click(function () {
+    $('#navData').click(function () {
         $('#main').load("data.html");
     });
-    $('#save').click(function() {
-       var tEmailAdr = $('#tEmailAdr').val();
-       var tPassword = $('#tPassword').val();
-       var tHome = $('#tHome').val();
-       if (tPassword.includes("docker-secret:") === false) {
-           if (tPassword.trim() !== "" ) {
-            $.post("/secret/tPassword", tPassword, function () {
-                manageFieldById('tPassword');
-            });
-        }
-       }
-       if (tEmailAdr.trim() !== "" ) {
-           $.post("/badger/tEmailAdr", tEmailAdr, function() {
-               manageFieldById('tEmailAdr');
-           });
-       }
-       if (tHome.trim() !== "") {
-           $.post("/badger/tHome", tHome, function() {
-               manageFieldById('tHome');
-           });
-       }
+    $('#navAPI').click(function () {
+        console.log("clicked: navAPI" );
+        $('#modalMain').load("navAPI.html");
     });
+    $('#navLocations').click(function () {
+        console.log("clicked: navLocations" );
+        $('#modalMain').load("navLocations.html");
+    });
+    $('#navRange').click(function () {
+        console.log("clicked: navRange" );
+        $('#modalMain').load("navRange.html");
+    });
+
     function manageFieldById(id) {
         $.get('/badger/'+id, function(value) {
            if (value) {

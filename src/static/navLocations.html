@@ -1,0 +1,61 @@
+<div class="modal-body" id="modalBody">
+    <form>
+        <div class="form-group">
+            <label for="tHome">Home GPS location</label>
+            <input type="text" class="form-control" id="tHome" placeholder="37.4919392,-121.9469367" value="">
+        </div>
+        <div class="form-group">
+            <label for="tHomeRadiusFt">Home location radius</label>
+            <input type="text" class="form-control" id="tHomeRadiusFt" placeholder="100" value="">
+        </div>
+        <div class="form-group">
+            <label for="tWork">Work GPS location</label>
+            <input type="text" class="form-control" id="tWork" placeholder="37.4919392,-121.9469367" value="">
+        </div>
+        <div class="form-group">
+            <label for="tWorkRadiusFt">Work location radius</label>
+            <input type="text" class="form-control" id="tWorkRadiusFt" placeholder="100" value="">
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-info" id="saveLocations" > Save </button>
+    <button type="button" class="btn btn-primary" id="start"> Start Query </button>
+</div>
+
+<!--
+	putDefault("tHome","37.4919392,-121.9469367")
+	putDefault("tHomeRadiusFt","100")
+	putDefault("tWork","37.4919392,-121.9469367")
+	putDefault("tWorkRadiusFt","100")
+-->
+<script>
+    $( document ).ready(function(){
+        manageFieldById('tHome');
+        manageFieldById('tHomeRadiusFt');
+        manageFieldById('tWork');
+        manageFieldById('tWorkRadiusFt');
+    });
+    $('#saveLocations').click(function() {
+        var tHome = $('#tHome').val();
+        var tHomeRadiusFt = $('#tHomeRadiusFt').val();
+        var tWork = $('#tWork').val();
+        var tWorkRadisuFt = $('#tWorkRadiusFt').val();
+        if (tHome.trim() !== "" ) {
+            $.post("/badger/tHome", tHome, manageFieldById('tHome'))
+        }
+        if (tHomeRadiusFt.trim() !== "" ) {
+            $.post("/badger/tHomeRadiusFt", tHome, manageFieldById('tHomeRadiusFt'))
+        }
+        if (tWork.trim() !== "" ) {
+            $.post("/badger/tWork", tWork, manageFieldById('tWork'))
+        }
+        if (tWorkRadisuFt.trim() !== "" ) {
+            $.post("/badger/tWorkRadiusFt", tWorkRadisuFt, manageFieldById('tWorkRadiusFt'))
+        }
+    });
+    $('#start').click(function() {
+        $.post("/start/query")
+    });
+</script>

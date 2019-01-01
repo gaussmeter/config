@@ -1,0 +1,43 @@
+<div class="modal-body" id="modalBody">
+    <form>
+        <div class="form-group">
+            <label for="tEmailAdr">User Name</label>
+            <input type="email" class="form-control" id="tEmailAdr" placeholder="user@domain.com" value="" autocomplete="username">
+        </div>
+        <div class="form-group">
+            <label for="tPassowrd">Password</label>
+            <input type="password" class="form-control" id="tPassword" autocomplete="current-password">
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-info" id="saveAPI" > Save </button>
+    <button type="button" class="btn btn-primary" id="start"> Start Query </button>
+</div>
+
+<script>
+    $( document ).ready(function(){
+        manageFieldById('tEmailAdr');
+        manageFieldById('tPassword');
+    });
+    $('#saveAPI').click(function() {
+        var tEmailAdr = $('#tEmailAdr').val();
+        var tPassword = $('#tPassword').val();
+        if (tPassword.includes("docker-secret:") === false) {
+            if (tPassword.trim() !== "" ) {
+                $.post("/secret/tPassword", tPassword, function () {
+                    manageFieldById('tPassword');
+                });
+            }
+        }
+        if (tEmailAdr.trim() !== "" ) {
+            $.post("/badger/tEmailAdr", tEmailAdr, function() {
+                manageFieldById('tEmailAdr');
+            });
+        }
+    });
+    $('#start').click(function() {
+        $.post("/start/query")
+    });
+</script>
