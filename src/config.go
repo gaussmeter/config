@@ -41,21 +41,13 @@ func createService(serviceName string, imageName string) string {
 	var serviceSpec swarm.ServiceSpec
 	containerSpec := &swarm.ContainerSpec{Image: imageName}
 	serviceSpec.TaskTemplate.ContainerSpec = containerSpec
-	networkAttachmentConfig := swarm.NetworkAttachmentConfig{Target: getNetworkID("gaussnet")}
+	networkAttachmentConfig := swarm.NetworkAttachmentConfig{Target: getNetworkID("gaussnet")} //Todo gaussnet -> ??net
 	serviceSpec.TaskTemplate.Networks = append(serviceSpec.TaskTemplate.Networks, networkAttachmentConfig)
 	annotations := swarm.Annotations{Name: serviceName}
 	serviceSpec.Annotations = annotations
 	fileMode := os.FileMode(uint32(0))
-	secretReferenceFileTarget := &swarm.SecretReferenceFileTarget{"/var/run/secrets/password", "0", "0", fileMode}
-	secret := &swarm.SecretReference{File: secretReferenceFileTarget, SecretID: getSecretID(strings.Split(getValue("GaussPassword"),"docker-secret:")[1]), SecretName: strings.Split(getValue("GaussPassword"),"docker-secret:")[1]}
-	serviceSpec.TaskTemplate.ContainerSpec.Secrets = append(serviceSpec.TaskTemplate.ContainerSpec.Secrets, secret)
-
-	secretReferenceFileTarget = &swarm.SecretReferenceFileTarget{"/var/run/secrets/email", "0", "0", fileMode}
-	secret = &swarm.SecretReference{File: secretReferenceFileTarget, SecretID: getSecretID("GaussUserName"), SecretName: "GaussUserName"}
-	serviceSpec.TaskTemplate.ContainerSpec.Secrets = append(serviceSpec.TaskTemplate.ContainerSpec.Secrets, secret)
-
-	secretReferenceFileTarget = &swarm.SecretReferenceFileTarget{"/var/run/secrets/home", "0", "0", fileMode}
-	secret = &swarm.SecretReference{File: secretReferenceFileTarget, SecretID: getSecretID("GaussHome"), SecretName: "GaussHome"}
+	secretReferenceFileTarget := &swarm.SecretReferenceFileTarget{"/var/run/secrets/tPassword", "0", "0", fileMode}
+	secret := &swarm.SecretReference{File: secretReferenceFileTarget, SecretID: getSecretID(strings.Split(getValue("tPassword"),"docker-secret:")[1]), SecretName: strings.Split(getValue("tPassword"),"docker-secret:")[1]}
 	serviceSpec.TaskTemplate.ContainerSpec.Secrets = append(serviceSpec.TaskTemplate.ContainerSpec.Secrets, secret)
 
 	var serviceCreateOptions types.ServiceCreateOptions
@@ -156,11 +148,8 @@ func secretPut(w http.ResponseWriter, r *http.Request) {
 func startService(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
 	if name == "query" {
+		//Todo: change this to update if exists -or- create
 		deleteService("query")
-		deleteSecret("GaussUserName")
-		deleteSecret("GaussHome")
-		createSecret(getValue("GaussUserName"), "GaussUserName")
-		createSecret(getValue("GaussHome"), "GaussHome")
 		createService("query", "gaussmeter/query")
 		fmt.Fprintf(w, "ok")
 	} else {
@@ -242,12 +231,15 @@ func main() {
 	}
 	defer CLI.Close()
 
-	//Tesla's Freemont Factory
-	putDefault("home","37.4919392,-121.9469367")
-	putDefault("homeMaxDistFt","100")
-	putDefault("chargedRange", "270")
-	putDefault("shouldChargeRange","100")
-	putDefault("lowRange","30")
+	putDefault("tHome","37.4919392,-121.9469367")
+	putDefault("tHomeRadiusFt","100")
+	putDefault("tWork","37.4919392,-121.9469367")
+	putDefault("tWorkRadiusFt","100")
+	putDefault("tChargeRangeFull", "270")
+	putDefault("tChargeRangeMedium","100")
+	putDefault("tChargeRangeLow","30")
+	//tEmailAdr
+	//tPassword
 
 	rtr := mux.NewRouter()
 	rtr.HandleFunc("/badger/{key}", badgerGet).Methods("GET")
@@ -264,4 +256,3 @@ func main() {
 }
 
 // ToDo: implement https://github.com/dgraph-io/badger#garbage-collection
-// ToDo: add Gaussmeter fav icon

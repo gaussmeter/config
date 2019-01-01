@@ -44,16 +44,16 @@
             <div class="modal-body">
                 <form>
                     <div class="form-group">
-                        <label for="formHomeInput">Home GPS location</label>
-                        <input type="text" class="form-control" id="formHomeInput" placeholder="123,456" value="">
+                        <label for="fromHome">Home GPS location</label>
+                        <input type="text" class="form-control" id="tHome" placeholder="37.4919392,-121.9469367" value="">
                     </div>
                     <div class="form-group">
-                        <label for="formEmailInput">User Name</label>
-                        <input type="email" class="form-control" id="formEmailInput" placeholder="user@gamil.com">
+                        <label for="formEmailAdr">User Name</label>
+                        <input type="email" class="form-control" id="tEmailAdr" placeholder="user@domain.com" value="" autocomplete="username">
                     </div>
                     <div class="form-group">
-                        <label for="formPassowrdInput">Password</label>
-                        <input type="password" class="form-control" id="formPasswordInput" >
+                        <label for="formPassowrd">Password</label>
+                        <input type="password" class="form-control" id="tPassword" autocomplete="current-password">
                     </div>
                 </form>
 
@@ -86,9 +86,9 @@
       $.post("/start/query")
     });
     $('#configModal').on('shown.bs.modal',function(){
-        formHomeInput();
-        formEmailInput();
-        formPasswordInput();
+        manageFieldById('tEmailAdr');
+        manageFieldById('tPassword');
+        manageFieldById('tHome');
     });
     $('#statusBtn').click(function () {
         $('#main').load("status.html");
@@ -97,67 +97,39 @@
         $('#main').load("data.html");
     });
     $('#save').click(function() {
-       var GaussUserName = $('#formEmailInput').val();
-       var GaussPassword = $('#formPasswordInput').val();
-       var GaussHome = $('#formHomeInput').val();
-       if (GaussPassword.includes("docker-secret:") == false) {
-           if (GaussPassword.trim() !== "" ) {
-            $.post("/secret/GaussPassword", GaussPassword, function () {
-                formPasswordInput();
+       var tEmailAdr = $('#tEmailAdr').val();
+       var tPassword = $('#tPassword').val();
+       var tHome = $('#tHome').val();
+       if (tPassword.includes("docker-secret:") === false) {
+           if (tPassword.trim() !== "" ) {
+            $.post("/secret/tPassword", tPassword, function () {
+                manageFieldById('tPassword');
             });
         }
        }
-       if (GaussUserName.trim() !== "" ) {
-           $.post("/badger/GaussUserName", GaussUserName, function() {
-               formEmailInput();
+       if (tEmailAdr.trim() !== "" ) {
+           $.post("/badger/tEmailAdr", tEmailAdr, function() {
+               manageFieldById('tEmailAdr');
            });
        }
-       if (GaussHome.trim() !== "") {
-           $.post("/badger/GaussHome", GaussHome, function() {
-               formHomeInput();
+       if (tHome.trim() !== "") {
+           $.post("/badger/tHome", tHome, function() {
+               manageFieldById('tHome');
            });
        }
     });
-    //Todo: DRY these out..
-    function formEmailInput() {
-        $.get("/badger/GaussUserName", function (data, status) {
-            if (data) {
-                $('#formEmailInput').removeClass('is-invalid');
-                $('#formEmailInput').addClass('is-valid');
-                $('#formEmailInput').val(data);
-            } else {
-
-                $('#formEmailInput').removeClass('is-valid');
-                $('#formEmailInput').addClass('is-invalid');
-                $('#formEmailInput').val("");
-            }
-        });
-    }
-    function formHomeInput() {
-        $.get("/badger/GaussHome", function (data, status) {
-            if (data) {
-                $('#formHomeInput').removeClass('is-invalid');
-                $('#formHomeInput').addClass('is-valid');
-                $('#formHomeInput').val(data);
-            } else {
-                $('#formHomeInput').removeClass('is-valid');
-                $('#formHomeInput').addClass('is-invalid');
-                $('#formHomeInput').val("");
-            }
-        });
-    }
-    function formPasswordInput() {
-        $.get("/badger/GaussPassword", function(data, status) {
-            if (data) {
-                $('#formPasswordInput').removeClass('is-invalid');
-                $('#formPasswordInput').addClass('is-valid');
-                $('#formPasswordInput').val(data);
-            } else {
-                $('#formPasswordInput').removeClass('is-valid');
-                $('#formPasswordInput').addClass('is-invalid');
-                $('#formPasswordInput').val("");
-            }
-        });
+    function manageFieldById(id) {
+        $.get('/badger/'+id, function(value) {
+           if (value) {
+               $('#'+id).removeClass('is-invalid');
+               $('#'+id).addClass('is-valid');
+               $('#'+id).val(value)
+           } else {
+               $('#'+id).removeClass('is-valid');
+               $('#'+id).addClass('is-invalid');
+               $('#'+id).val('')
+           }
+        })
     }
 </script>
 
