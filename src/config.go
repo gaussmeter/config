@@ -14,6 +14,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
 )
 
@@ -210,6 +211,24 @@ func putDefault(key string, val string) {
 
 
 func main() {
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func(){
+		for sig := range c {
+			log.Printf("Signal recieved: %s",sig)
+			if (sig == os.Interrupt) {
+				log.Print("Stopping Badger")
+				DB.Close()
+				log.Print("Closing Docker Client")
+				CLI.Close()
+				log.Print("Exiting")
+				os.Exit(0)
+
+			}
+		}
+	}()
+
 	var err error
 
 	opts := badger.DefaultOptions
