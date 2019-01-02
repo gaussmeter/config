@@ -17,6 +17,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 )
 
 var (
@@ -231,6 +232,20 @@ func main() {
 		}
 	}()
 
+	go func() {
+		ticker := time.NewTicker(60 * time.Minute)
+		defer ticker.Stop()
+		for range ticker.C {
+		again:
+			log.Print("Badger Garbage Collection - Start")
+			err := DB.RunValueLogGC(0.7)
+			log.Printf("Badger Garbage Collection - Finish. Err: %s",err)
+			if err == nil {
+				goto again
+			}
+		}
+	}()
+
 	var err error
 
 	opts := badger.DefaultOptions
@@ -275,5 +290,3 @@ func main() {
 
 	log.Fatal(http.ListenAndServeTLS(":8443", "server.crt", "server.key", nil))
 }
-
-// ToDo: implement https://github.com/dgraph-io/badger#garbage-collection
