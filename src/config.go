@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"syscall"
 )
 
 var (
@@ -214,10 +215,11 @@ func main() {
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, syscall.SIGTERM)
 	go func(){
 		for sig := range c {
 			log.Printf("Signal recieved: %s",sig)
-			if (sig == os.Interrupt) {
+			if (sig == os.Interrupt) || (sig == syscall.SIGTERM) {
 				log.Print("Stopping Badger")
 				DB.Close()
 				log.Print("Closing Docker Client")
