@@ -33,6 +33,10 @@
             <td>currentStateKey</td>
             <td><div id="currentStateKey">....</div> </td>
         </tr>
+        <tr>
+            <td>Last Reading</td>
+            <td><div id="currentStateLocalTime">....</div> </td>
+        </tr>
         </tbody>
     </table>
 </div>
@@ -55,6 +59,8 @@
         //console.log( "ready!" );
         $.get("/badger/currentStateKey", function(currentStateKey) {
             //console.log(currentStateKey);
+            var localdatetime = new Date(currentStateKey)
+            $('#currentStateLocalTime').text(localdatetime.toString());
             $('#currentStateKey').text(currentStateKey);
            $.getJSON("/badger/"+currentStateKey, function(currentState) {
                //console.log(currentState);
