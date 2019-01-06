@@ -26,6 +26,9 @@
             <li class="nav-item active">
                 <a class="nav-link" href="#data" id="navData" >Data<span class="sr-only"></span></a>
             </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="#lumen" id="navlumen" >Lumen<span class="sr-only"></span></a>
+            </li>
             <li class="nav-item">
                 <a data-toggle="modal" data-target="#configModal" class="nav-link" href="#Config" id="navConfig">Config</a>
             </li>
@@ -85,6 +88,9 @@
     });
     $('#navData').click(function () {
         $('#main').load("data.html");
+    });
+    $('#navlumen').click(function () {
+        $('#main').load("lumen.html");
     });
     $('#navAPI').click(function () {
         console.log("clicked: navAPI" );

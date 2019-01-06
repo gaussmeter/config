@@ -274,6 +274,10 @@ func main() {
 	putDefault("tChargeRangeFull", "270")
 	putDefault("tChargeRangeMedium","100")
 	putDefault("tChargeRangeLow","30")
+	putDefault("eventIsHomeIsPlugged","fill")
+	putDefault("eventIsHomeNotPlugged","fill")
+	putDefault("eventIsHomeNotPluggedBelowChargeRangeMedium","fill")
+	putDefault("eventNotHome","rainbow")
 	//tEmailAdr
 	//tPassword
 

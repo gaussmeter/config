@@ -1,0 +1,68 @@
+<div class="container" id="lumen">
+    <table class="table table-striped ">
+        <thead>
+        <tr>
+            <td>Event(s)</td>
+            <td>Animation</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Car is home and plugged in</td>
+            <td><div id="diveventIsHomeIsPlugged"></div> </td>
+        </tr>
+        <tr>
+            <td>Car is home but not plugged in</td>
+            <td><div id="diveventIsHomeNotPlugged"></div> </td>
+        </tr>
+        <tr>
+            <td><div id="replaceX">Car is home, not plugged in and below X miles range</div></td>
+            <td><div id="diveventIsHomeNotPluggedBelowChargeRangeMedium"></div> </td>
+        </tr>
+        <tr>
+            <td>Car is not at home</td>
+            <td><div id="diveventNotHome"></div> </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<template id="selectTemplate">
+    <div class="form-group" >
+        <select onchange="eventSelectChange(this);" class="form-control" id="selectAnimation">
+            <option id="animationRainbow" value="rainbow">Rainbow</option>
+            <option id="animationFill" value="fill">Fill</option>
+        </select>
+    </div>
+</template>
+<script>
+    $( document ).ready(function() {
+        $.get("/badger/tChargeRangeMedium", function(value) { //ToDo: find a more elegant way to insert tChargeRangeMedium
+            $("#replaceX").text($("#replaceX").text().replace("X", value));
+        });
+        var eventsArray = getEvents();
+        for (i = 0; i < eventsArray.length; i++) {
+            $('#' + eventsArray[i]).html($('#selectTemplate')[0].innerHTML.replace('selectAnimation',removeDiv(eventsArray[i])));
+            setSelection(removeDiv(eventsArray[i]))
+        }
+    });
+    function setSelection(div) {
+        $.get('/badger/'+div, function(value) {
+            $('#'+div).val(value)
+        })
+    }
+    function eventSelectChange(select) {
+        $.post('/badger/'+select.id, select.value);
+    }
+    function getEvents() {
+        var events = [];
+        for (i = 0; i < $('#lumen div').length; i++) {
+            if ($('#lumen div')[i].id.startsWith("divevent")) {
+                events.push($('#lumen div')[i].id);
+            }
+        }
+        return events
+    }
+    function removeDiv(string) {
+        return string.replace("div","")
+    }
+</script>
