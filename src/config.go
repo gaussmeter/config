@@ -274,10 +274,14 @@ func main() {
 	putDefault("tChargeRangeFull", "270")
 	putDefault("tChargeRangeMedium","100")
 	putDefault("tChargeRangeLow","30")
-	putDefault("eventIsHomeIsPlugged","fill")
-	putDefault("eventIsHomeNotPlugged","fill")
-	putDefault("eventIsHomeNotPluggedBelowChargeRangeMedium","fill")
-	putDefault("eventNotHome","rainbow")
+	putDefault("eIHIP","fill")
+	putDefault("eIHNP","fill")
+	putDefault("eIHNPBCRM","fill")
+	putDefault("eNH","rainbow")
+	putDefault("cIHIP","(0,0,0,255)")
+	putDefault("cIHNP","(0,0,0,255)")
+	putDefault("cIHNPBCRM","(0,0,0,255)")
+	putDefault("cNH","(0,0,0,255)")
 	//tEmailAdr
 	//tPassword
 
