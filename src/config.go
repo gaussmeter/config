@@ -278,10 +278,10 @@ func main() {
 	putDefault("eIHNP","fill")
 	putDefault("eIHNPBCRM","fill")
 	putDefault("eNH","rainbow")
-	putDefault("cIHIP","(0,0,0,255)")
-	putDefault("cIHNP","(0,0,0,255)")
-	putDefault("cIHNPBCRM","(0,0,0,255)")
-	putDefault("cNH","(0,0,0,255)")
+	putDefault("cIHIP","0,0,0,255")
+	putDefault("cIHNP","0,0,0,255")
+	putDefault("cIHNPBCRM","0,0,0,255")
+	putDefault("cNH","0,0,0,255")
 	//tEmailAdr
 	//tPassword
 
