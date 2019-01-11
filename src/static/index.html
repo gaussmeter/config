@@ -54,6 +54,9 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="#" id="navRange" >Range</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" id="navInterval" >Interval</a>
+                            </li>
                         </ul>
                 </nav>
             </div>
@@ -103,6 +106,10 @@
     $('#navRange').click(function () {
         console.log("clicked: navRange" );
         $('#modalMain').load("navRange.html");
+    });
+    $('#navInterval').click(function () {
+        console.log("clicked: navInterval" );
+        $('#modalMain').load("navInterval.html");
     });
 
     function manageFieldById(id) {

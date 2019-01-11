@@ -1,0 +1,60 @@
+<div class="modal-body" id="modalBody">
+    <form>
+        <div class="form-group">
+            <label for="tGetStateInterval"> Get State Interval (seconds) </label>
+            <input type="text" class="form-control" id="tGetStateInterval" placeholder="14400" value="">
+        </div>
+        <div class="form-group">
+            <label for="tSoftStateInterval"> Soft Check State Interval (seconds) </label>
+            <input type="text" class="form-control" id="tSoftStateInterval" placeholder="300" value="">
+        </div>
+        <div class="form-group">
+            <label for="tGetStateIntervalDriving"> Get State Interval Driving (seconds) </label>
+            <input type="text" class="form-control" id="tGetStateIntervalDriving" placeholder="30" value="">
+        </div>
+        <div class="form-group">
+            <label for="tGetStateIntervalCharging"> Get State Interval Charging (seconds) </label>
+            <input type="text" class="form-control" id="tGetStateIntervalCharging" placeholder="60" value="">
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-info" id="saveRange" > Save </button>
+    <button type="button" class="btn btn-primary" id="start"> Start Query </button>
+</div>
+<script>
+    $( document ).ready(function(){
+        manageFieldById('tGetStateInterval');
+        manageFieldById('tSoftStateInterval');
+        manageFieldById('tGetStateIntervalDriving');
+        manageFieldById('tGetStateIntervalCharging')
+    });
+    $('#saveRange').click(function() {
+        var tGetStateInterval = $('#tGetStateInterval').val();
+        var tSoftStateInterval = $('#tSoftStateInterval').val();
+        var tGetStateIntervalDriving = $('#tGetStateIntervalDriving').val();
+        var tGetStateIntervalCharging = $('#tGetStateIntervalCharging').val();
+        if (tGetStateInterval.trim() !== "" ) {
+            $.post("/badger/tGetStateInterval", tGetStateInterval, manageFieldById('tGetStateInterval'))
+        }
+        if (tSoftStateInterval.trim() !== "" ) {
+            $.post("/badger/tSoftStateInterval", tSoftStateInterval, manageFieldById('tSoftStateInterval'))
+        }
+        if (tGetStateIntervalDriving.trim() !== "" ) {
+            $.post("/badger/tGetStateIntervalDriving", tGetStateIntervalDriving, manageFieldById('tGetStateIntervalDriving'))
+        }
+        if (tGetStateIntervalCharging.trim() !== "" ) {
+            $.post("/badger/tGetStateIntervalCharging", tGetStateIntervalCharging, manageFieldById('tGetStateIntervalCharging'))
+        }
+    });
+    $('#start').click(function() {
+        $.post("/start/query")
+    });
+</script>
+<!--
+	putDefault("tGetStateInterval","14400")
+	putDefault("tSoftStateInterval","300")
+	putDefault("tGetStateIntervalDriving","30")
+	putDefault("tGetStateIntervalCharging","60")
+-->
