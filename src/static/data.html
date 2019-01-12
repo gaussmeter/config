@@ -1,7 +1,6 @@
 <div class="container" id="data">
     Data -- These are not the droids you are looking for.
 </div>
-<!--<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/dygraph/2.1.0/dygraph.min.css" />-->
 <script>
     $( document ).ready(function() {
         var data = [];
@@ -14,7 +13,8 @@
                 //console.log(state['data_state']['isGood'])
                 if (state['data_state']['isGood'] == true) {
                     //data.push([Date.parse(atob(item['key'])+'Z'),state['charge_state']['battery_range']])
-                    data.push([i,state['charge_state']['battery_range']])
+                    datetime = new Date(atob(item['key']))
+                    data.push([datetime,state['charge_state']['battery_range']])
                     g.updateOptions( { 'file': data } );
                 }
             })
