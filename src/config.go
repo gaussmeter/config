@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"github.com/dgraph-io/badger"
 	"github.com/dgraph-io/badger/options"
+	"github.com/dgraph-io/badger/pb"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
+	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/mux"
 	"github.com/rs/xid"
 	"io/ioutil"
@@ -134,6 +136,27 @@ func badgerPut(w http.ResponseWriter, r *http.Request) {
 	putValue(key,string(data))
 	fmt.Fprintf(w,"ok")
 	log.Printf("badger PUT Key: %s Value: %s \n",key,data)
+}
+
+func badgerStream(w http.ResponseWriter, r *http.Request){
+	prefix := mux.Vars(r)["prefix"]
+	log.Printf("streamr GET prefix: %s", prefix)
+	stream := DB.NewStream()
+
+	stream.NumGo = 2
+	stream.Prefix = []byte(prefix)
+	stream.LogPrefix = "Badger.Streaming"
+
+	// Send is called serially, while Stream.Orchestrate is running.
+	stream.Send = func(list *pb.KVList) error {
+		return proto.MarshalText(w, list) // Write to w.
+	}
+
+	// Run the stream
+	if err := stream.Orchestrate(context.Background()); err != nil {
+		log.Printf("error: %s", err)
+	}
+	// Done.
 }
 
 func secretPut(w http.ResponseWriter, r *http.Request) {
@@ -293,6 +316,7 @@ func main() {
 	rtr.HandleFunc("/badger/{key}", badgerGet).Methods("GET")
 	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("PUT")
 	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("POST")
+	rtr.HandleFunc("/streamr/{prefix}", badgerStream).Methods("GET")
 	rtr.HandleFunc("/secret/{key}", badgerGet).Methods("GET")
 	rtr.HandleFunc("/secret/{key}", secretPut).Methods("PUT")
 	rtr.HandleFunc("/secret/{key}", secretPut).Methods("POST")
