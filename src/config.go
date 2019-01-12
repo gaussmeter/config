@@ -306,7 +306,7 @@ func main() {
 	putDefault("cIHNPBCRM","0,0,0,255")
 	putDefault("cNH","0,0,0,255")
 	putDefault("tGetStateInterval","14400")
-	putDefault("tSoftStateInterval","300")
+	putDefault("tSoftStateInterval","600")
 	putDefault("tGetStateIntervalDriving","30")
 	putDefault("tGetStateIntervalCharging","60")
 	//tEmailAdr
