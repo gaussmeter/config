@@ -9,7 +9,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
-	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/gorilla/mux"
 	"github.com/rs/xid"
 	"io/ioutil"
@@ -149,7 +149,8 @@ func badgerStream(w http.ResponseWriter, r *http.Request){
 
 	// Send is called serially, while Stream.Orchestrate is running.
 	stream.Send = func(list *pb.KVList) error {
-		return proto.MarshalText(w, list) // Write to w.
+		marshlr := &jsonpb.Marshaler{true,true,"  ",true,nil}
+		return marshlr.Marshal(w, list)
 	}
 
 	// Run the stream
