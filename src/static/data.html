@@ -14,7 +14,8 @@
                 if (state['data_state']['isGood'] == true) {
                     //data.push([Date.parse(atob(item['key'])+'Z'),state['charge_state']['battery_range']])
                     datetime = new Date(atob(item['key']))
-                    data.push([datetime,state['charge_state']['battery_range']])
+                    //console.log(parseInt(state['vehicle_state']['distanceFromHome'])/5280)
+                    data.push([datetime,state['charge_state']['battery_range'],state['charge_state']['charge_rate'], state['charge_state']['battery_level'],parseInt(state['vehicle_state']['distanceFromHome'])/5280])
                     g.updateOptions( { 'file': data } );
                 }
             })
@@ -24,7 +25,8 @@
                 drawPoints: true,
                 showRoller: true,
                 //valueRange: [0.0, 1.2],
-                labels: ['Time', 'Range']
+                //labels: ['Time', 'Range', 'Rate', ['Percent']]
+                labels: ['Time', 'Range', 'Rate', 'Percent', 'Distance From Home']
             });
         // It sucks that these things aren't objects, and we need to store state in window.
         ///window.intervalId = setInterval(function() {
