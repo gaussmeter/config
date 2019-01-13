@@ -1,12 +1,18 @@
-<div class="container" id="data">
+<!--<div style="position: absolute; left: 200px; right: 10px; top: 150px; bottom: 10px; " class="container border" id="data"> -->
+<div class="container border" id="data">
     Data -- These are not the droids you are looking for.
+</div>
+<div class="container border" id="legend">
+
 </div>
 <script>
     $( document ).ready(function() {
         var data = [];
+        data.push([0,0,0,0,0])
         $.getJSON("/streamr/2019", function(stream) {
            //console.log(stream);
            //console.log(stream['fial']);
+            data.pop()
             $.each(stream['kv'], function (i, item) {
                 //console.log(atob(item['key']) + atob(item['value']));
                 state = $.parseJSON(atob(item['value']))
@@ -16,25 +22,27 @@
                     datetime = new Date(atob(item['key']))
                     //console.log(parseInt(state['vehicle_state']['distanceFromHome'])/5280)
                     data.push([datetime,state['charge_state']['battery_range'],state['charge_state']['charge_rate'], state['charge_state']['battery_level'],parseInt(state['vehicle_state']['distanceFromHome'])/5280])
-                    g.updateOptions( { 'file': data } );
+                    //g.updateOptions( { 'file': data } );
                 }
             })
         })
         var g = new Dygraph(document.getElementById("data"), data,
             {
                 drawPoints: true,
-                showRoller: true,
+                legend: 'always',
+                labelsDiv: document.getElementById('legend'),
+                //showRoller: true,
                 //valueRange: [0.0, 1.2],
-                //labels: ['Time', 'Range', 'Rate', ['Percent']]
-                labels: ['Time', 'Range', 'Rate', 'Percent', 'Distance From Home']
+                labels: ['Time', 'Range', 'Rate', 'Percent', 'Distance From Home'],
+                //timingName: 'graphr'
             });
         // It sucks that these things aren't objects, and we need to store state in window.
-        ///window.intervalId = setInterval(function() {
+        window.intervalId = setInterval(function() {
             //var x = new Date();  // current time
             //var y = Math.random();
             //data.push([x, y]);
-            ///g.updateOptions( { 'file': data } );
-        ///}, 1000);
+            g.updateOptions( { 'file': data } );
+        }, 1000);
     });
 
 </script>
