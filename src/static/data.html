@@ -22,7 +22,7 @@
                     datetime = new Date(atob(item['key']))
                     //console.log(parseInt(state['vehicle_state']['distanceFromHome'])/5280)
                     data.push([datetime,state['charge_state']['battery_range'],state['charge_state']['charge_rate'], state['charge_state']['battery_level'],parseInt(state['vehicle_state']['distanceFromHome'])/5280])
-                    //g.updateOptions( { 'file': data } );
+                    g.updateOptions( { 'file': data } );
                 }
             })
         })
@@ -34,15 +34,15 @@
                 //showRoller: true,
                 //valueRange: [0.0, 1.2],
                 labels: ['Time', 'Range', 'Rate', 'Percent', 'Distance From Home'],
-                //timingName: 'graphr'
+                timingName: 'graphr'
             });
         // It sucks that these things aren't objects, and we need to store state in window.
-        window.intervalId = setInterval(function() {
+        ///window.intervalId = setInterval(function() {
             //var x = new Date();  // current time
             //var y = Math.random();
             //data.push([x, y]);
-            g.updateOptions( { 'file': data } );
-        }, 1000);
+            ///g.updateOptions( { 'file': data } );
+        ///}, 1000);
     });
 
 </script>
