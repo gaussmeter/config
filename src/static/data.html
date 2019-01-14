@@ -6,43 +6,32 @@
 
 </div>
 <script>
-    $( document ).ready(function() {
+    $(document).ready(function () {
         var data = [];
-        data.push([0,0,0,0,0])
-        $.getJSON("/streamr/2019", function(stream) {
-           //console.log(stream);
-           //console.log(stream['fial']);
-            data.pop()
-            $.each(stream['kv'], function (i, item) {
-                //console.log(atob(item['key']) + atob(item['value']));
-                state = $.parseJSON(atob(item['value']))
-                //console.log(state['data_state']['isGood'])
-                if (state['data_state']['isGood'] == true) {
-                    //data.push([Date.parse(atob(item['key'])+'Z'),state['charge_state']['battery_range']])
-                    datetime = new Date(atob(item['key']))
-                    //console.log(parseInt(state['vehicle_state']['distanceFromHome'])/5280)
-                    data.push([datetime,state['charge_state']['battery_range'],state['charge_state']['charge_rate'], state['charge_state']['battery_level'],parseInt(state['vehicle_state']['distanceFromHome'])/5280])
-                    g.updateOptions( { 'file': data } );
-                }
-            })
-        })
+        data.push([0, 0, 0, 0, 0]);
         var g = new Dygraph(document.getElementById("data"), data,
             {
                 drawPoints: true,
                 legend: 'always',
                 labelsDiv: document.getElementById('legend'),
-                //showRoller: true,
-                //valueRange: [0.0, 1.2],
                 labels: ['Time', 'Range', 'Rate', 'Percent', 'Distance From Home'],
                 timingName: 'graphr'
             });
-        // It sucks that these things aren't objects, and we need to store state in window.
-        ///window.intervalId = setInterval(function() {
-            //var x = new Date();  // current time
-            //var y = Math.random();
-            //data.push([x, y]);
-            ///g.updateOptions( { 'file': data } );
-        ///}, 1000);
+        $.getJSON("/streamr/2019", function (stream) {
+            data.pop();
+            total = stream['kv'].length;
+            $.each(stream['kv'], function (i, item) {
+                state = $.parseJSON(atob(item['value']));
+                if (state['data_state']['isGood'] == true) {
+                    datetime = new Date(atob(item['key']));
+                    data.push([datetime, state['charge_state']['battery_range'], state['charge_state']['charge_rate'], state['charge_state']['battery_level'], parseInt(state['vehicle_state']['distanceFromHome']) / 5280])
+                    if (total - 1 == i) {
+                        g.updateOptions({'file': data});
+                    }
+                }
+            })
+        })
+
     });
 
 </script>
