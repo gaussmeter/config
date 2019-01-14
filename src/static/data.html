@@ -1,8 +1,9 @@
 <!--<div style="position: absolute; left: 200px; right: 10px; top: 150px; bottom: 10px; " class="container border" id="data"> -->
-<div class="container border" id="data">
+<div class="container" id="data" style="position: relative; width: 80%; ">
+    <div id={this.props.containerId} style="position: relative; width: 80%; position: absolute; left: 1px; right: 1px; top: 1px; bottom: 1px; min-width: 100%; max-height: 100%; "> </div>
     Data -- These are not the droids you are looking for.
 </div>
-<div class="container border" id="legend">
+<div class="container" id="legend">
 
 </div>
 <script>
@@ -15,7 +16,9 @@
                 legend: 'always',
                 labelsDiv: document.getElementById('legend'),
                 labels: ['Time', 'Range', 'Rate', 'Percent', 'Distance From Home'],
-                timingName: 'graphr'
+                timingName: 'graphr',
+                labelsSeparateLines: true,
+                showRangeSelector: true
             });
         $.getJSON("/streamr/2019", function (stream) {
             data.pop();
@@ -35,3 +38,7 @@
     });
 
 </script>
+<!--
+Best I could do make the graphs resize.
+https://stackoverflow.com/questions/45095890/how-to-scale-dygraph-on-a-page-correctly
+-->
