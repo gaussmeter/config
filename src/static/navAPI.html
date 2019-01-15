@@ -8,6 +8,14 @@
             <label for="tPassowrd">Password</label>
             <input type="password" class="form-control" id="tPassword" autocomplete="current-password">
         </div>
+        <div class="form-group">
+            <label for="tVehicle">Vehicle</label>
+            <select onchange="selectChange(this);" class="form-control" id="tVehicle">
+                <option id="vehicle0" value="0">Frist</option>
+                <option id="vehicle1" value="1">Second</option>
+                <option id="vehicle2" value="2">Third</option>
+            </select>
+        </div>
     </form>
 </div>
 <div class="modal-footer">
@@ -20,6 +28,7 @@
     $( document ).ready(function(){
         manageFieldById('tEmailAdr');
         manageFieldById('tPassword');
+        setSelection('tVehicle')
     });
     $('#saveAPI').click(function() {
         var tEmailAdr = $('#tEmailAdr').val();
@@ -40,4 +49,12 @@
     $('#start').click(function() {
         $.post("/start/query")
     });
+    function setSelection(div) {
+        $.get('/badger/'+div, function(value) {
+            $('#'+div).val(value)
+        })
+    }
+    function selectChange(select) {
+        $.post('/badger/'+select.id, select.value);
+    }
 </script>

@@ -310,6 +310,7 @@ func main() {
 	putDefault("tSoftStateInterval","600")
 	putDefault("tGetStateIntervalDriving","30")
 	putDefault("tGetStateIntervalCharging","60")
+	putDefault("tVehicle","0")
 	//tEmailAdr
 	//tPassword
 
