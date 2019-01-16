@@ -7,19 +7,9 @@
 </div>
 <script>
     $(document).ready(function () {
+        $('#data').load("wheel.html");
         var data = [];
-        data.push([0, 0, 0, 0, 0]);
-        var g = new Dygraph(document.getElementById("data"), data,
-            {
-                drawPoints: true,
-                legend: 'always',
-                labelsDiv: document.getElementById('legend'),
-                labels: ['Time', 'Range', 'Rate', 'Percent', 'Distance From Home'],
-                labelsSeparateLines: true,
-                showRangeSelector: true
-            });
         $.getJSON("/streamr/2019", function (stream) {
-            data.pop();
             total = stream['kv'].length;
             $.each(stream['kv'], function (i, item) {
                 state = $.parseJSON(atob(item['value']));
@@ -27,14 +17,21 @@
                     datetime = new Date(atob(item['key']));
                     data.push([datetime, state['charge_state']['battery_range'], state['charge_state']['charge_rate'], state['charge_state']['battery_level'], parseInt(state['vehicle_state']['distanceFromHome']) / 5280])
                     if (total - 1 == i) {
+                        var g = new Dygraph(document.getElementById("data"), data,
+                            {
+                                drawPoints: true,
+                                legend: 'always',
+                                labelsDiv: document.getElementById('legend'),
+                                labels: ['Time', 'Range', 'Rate', 'Percent', 'Distance From Home'],
+                                labelsSeparateLines: true,
+                                showRangeSelector: true
+                            });
                         g.updateOptions({'file': data});
                     }
                 }
             })
         })
-
     });
-
 </script>
 <!--
 Best I could do make the graphs resize.
