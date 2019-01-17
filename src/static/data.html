@@ -9,12 +9,13 @@
     $(document).ready(function () {
         $('#data').load("wheel.html");
         var data = [];
-        $.getJSON("/streamr/2019", function (stream) {
+        $.getJSON("/streamr/ts_", function (stream) {
             total = stream['kv'].length;
             $.each(stream['kv'], function (i, item) {
                 state = $.parseJSON(atob(item['value']));
                 if (state['data_state']['isGood'] == true) {
-                    datetime = new Date(atob(item['key']));
+                    datetime = new Date(0);
+                    datetime.setUTCSeconds(atob(item['key']).replace('ts_',''));
                     data.push([datetime, state['charge_state']['battery_range'], state['charge_state']['charge_rate'], state['charge_state']['battery_level'], parseInt(state['vehicle_state']['distanceFromHome']) / 5280])
                     if (total - 1 == i) {
                         var g = new Dygraph(document.getElementById("data"), data,

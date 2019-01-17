@@ -59,7 +59,8 @@
         //console.log( "ready!" );
         $.get("/badger/currentStateKey", function(currentStateKey) {
             //console.log(currentStateKey);
-            var localdatetime = new Date(currentStateKey+"Z")
+            var localdatetime = new Date(0);
+            localdatetime.setUTCSeconds(currentStateKey.replace('ts_',''));
             $('#currentStateLocalTime').text(localdatetime.toString());
             $('#currentStateKey').text(currentStateKey);
            $.getJSON("/badger/"+currentStateKey, function(currentState) {
