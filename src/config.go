@@ -143,7 +143,7 @@ func badgerStream(w http.ResponseWriter, r *http.Request){
 	log.Printf("streamr GET prefix: %s", prefix)
 	stream := DB.NewStream()
 
-	stream.NumGo = 2
+	stream.NumGo = 1
 	stream.Prefix = []byte(prefix)
 	stream.LogPrefix = "Badger.Streaming"
 
