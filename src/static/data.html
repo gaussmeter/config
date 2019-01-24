@@ -20,9 +20,9 @@
                     if (state['drive_state']['speed']) {
                         speed = state['drive_state']['speed'];
                     } else {
-                        speed = 0;
+                        speed = null;
                     }
-                    data.push([datetime, state['charge_state']['battery_range'], state['charge_state']['charge_rate'], state['charge_state']['battery_level'], parseInt(state['vehicle_state']['distanceFromHome']) / 5280, speed])
+                    data.push([datetime, state['charge_state']['battery_range'], state['charge_state']['charge_rate'], state['charge_state']['battery_level'], Math.round(parseInt(state['vehicle_state']['distanceFromHome']) / 5280 * 100)/100, speed])
                     if (total - 1 == i) {
                         var g = new Dygraph(document.getElementById("data"), data,
                             {
@@ -43,4 +43,6 @@
 <!--
 Best I could do make the graphs resize.
 https://stackoverflow.com/questions/45095890/how-to-scale-dygraph-on-a-page-correctly
+
+Todo: enable/disable series using http://dygraphs.com/options.html#visibility
 -->
