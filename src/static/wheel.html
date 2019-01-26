@@ -1,34 +1,19 @@
-<svg xmlns:svg="http://www.w3.org/2000/svg" viewBox="0 0 225 225" onload="init(evt)">
+<!-- Thanks for the help Bill! -->
+<style>
+    svg {
+        animation: spin 2500ms ease-in-out infinite;
+    }
 
-    <script type="text/ecmascript"><![CDATA[
-        var svg;
-
-        function init(evt) {
-            if (window.svgDocument == null) {
-                svg = evt.target.ownerDocument;
-            }
-            addRotateTransform('wheel', 4, 1);
+    @keyframes spin {
+        from {
+            transform:rotate(0deg);
         }
-
-        function addRotateTransform(target_id, speed, direction) {
-            var element_to_rotate = svg.getElementById(target_id);
-            var my_transform = svg.createElementNS("http://www.w3.org/2000/svg", "animateTransform");
-
-            var bb = element_to_rotate.getBBox();
-            var cx = bb.x + bb.width/2;
-            var cy = bb.y + bb.height/2;
-
-            my_transform.setAttributeNS(null, "attributeName", "transform");
-            my_transform.setAttributeNS(null, "type", "rotate");
-            my_transform.setAttributeNS(null, "dur", speed + "s");
-            my_transform.setAttributeNS(null, "repeatCount", "indefinite");
-            my_transform.setAttributeNS(null, "from", "0 "+cx+" "+cy);
-            my_transform.setAttributeNS(null, "to", 360*direction+" "+cx+" "+cy);
-
-            element_to_rotate.appendChild(my_transform);
-            my_transform.beginElement();
+        to {
+            transform:rotate(360deg);
         }
-        ]]></script>
+    }
+</style>
+<svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.0" width="96" height="96" id="svg2" viewBox="4 4 28 28">
     <g>
         <path
                 id="wheel"
