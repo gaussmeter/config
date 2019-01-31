@@ -138,7 +138,6 @@ func badgerPut(w http.ResponseWriter, r *http.Request) {
 	log.Printf("badger PUT Key: %s Value: %s \n",key,data)
 }
 
-// Todo: get the stream from badger, then marshal, then return to client.
 func badgerStream(w http.ResponseWriter, r *http.Request){
 	prefix := mux.Vars(r)["prefix"]
 	log.Printf("streamr GET prefix: %s", prefix)
