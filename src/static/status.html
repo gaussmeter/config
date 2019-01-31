@@ -65,13 +65,13 @@
             $('#currentStateKey').text(currentStateKey);
            $.getJSON("/badger/"+currentStateKey, function(currentState) {
                //console.log(currentState);
-               $('#isHome').text(currentState['vehicle_state']['isHome']);
+               $('#isHome').text(currentState['state']['isHome']);
                $('#range').text(currentState['charge_state']['ideal_battery_range']);
                $('#isDriving').text(isDriving(currentState['drive_state']['shift_state']));
                $('#isCharging').text(isCharging(currentState['charge_state']['charge_rate']));
-               $('#isCharged').text(currentState['vehicle_state']['isCharged']);
-               $('#shouldCharge').text(currentState['vehicle_state']['shouldCharge']);
-               $('#isLow').text(currentState['vehicle_state']['isLow']);
+               $('#isCharged').text(currentState['state']['isCharged']);
+               $('#shouldCharge').text(currentState['state']['shouldCharge']);
+               $('#isLow').text(currentState['state']['isLow']);
            })
         });
     });
