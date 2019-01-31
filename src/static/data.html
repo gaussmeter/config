@@ -22,7 +22,7 @@
                     } else {
                         speed = null;
                     }
-                    data.push([datetime, state['charge_state']['battery_range'], state['charge_state']['charge_rate'], state['charge_state']['battery_level'], Math.round(parseInt(state['vehicle_state']['distanceFromHome']) / 5280 * 100)/100, speed])
+                    data.push([datetime, state['charge_state']['battery_range'], state['charge_state']['charge_rate'], state['charge_state']['battery_level'], Math.round(parseInt(state['state']['distanceFromHome']) / 5280 * 100)/100, speed])
                     if (total - 1 == i) {
                         var g = new Dygraph(document.getElementById("data"), data,
                             {
