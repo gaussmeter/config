@@ -148,9 +148,10 @@ func badgerStream(w http.ResponseWriter, r *http.Request){
 	stream.Prefix = []byte(prefix)
 	stream.LogPrefix = "Badger.Streaming"
 
+	marshlr := &jsonpb.Marshaler{true,true,"  ",true,nil}
+
 	// Send is called serially, while Stream.Orchestrate is running.
 	stream.Send = func(list *pb.KVList) error {
-		marshlr := &jsonpb.Marshaler{true,true,"  ",true,nil}
 		return marshlr.Marshal(w, list)
 	}
 
