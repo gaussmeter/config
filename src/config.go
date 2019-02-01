@@ -138,20 +138,19 @@ func badgerPut(w http.ResponseWriter, r *http.Request) {
 	log.Printf("badger PUT Key: %s Value: %s \n",key,data)
 }
 
-func badgerStream(w http.ResponseWriter, r *http.Request){
-	prefix := mux.Vars(r)["prefix"]
-	log.Printf("streamr GET prefix: %s", prefix)
+func badgerStream(prefix string) *pb.KVList {
 	stream := DB.NewStream()
 
 	stream.NumGo = 1
 	stream.Prefix = []byte(prefix)
 	stream.LogPrefix = "Badger.Streaming"
 
-	marshlr := &jsonpb.Marshaler{true,true,"  ",true,nil}
+	fullList := pb.KVList{}
 
 	// Send is called serially, while Stream.Orchestrate is running.
 	stream.Send = func(list *pb.KVList) error {
-		return marshlr.Marshal(w, list)
+		fullList.Kv = append(fullList.Kv, list.Kv...)
+		return nil
 	}
 
 	// Run the stream
@@ -159,6 +158,14 @@ func badgerStream(w http.ResponseWriter, r *http.Request){
 		log.Printf("error: %s", err)
 	}
 	// Done.
+	return &fullList
+}
+
+func streamrGet(w http.ResponseWriter, r *http.Request){
+	prefix := mux.Vars(r)["prefix"]
+	log.Printf("streamr GET prefix: %s", prefix)
+	marshlr := &jsonpb.Marshaler{true,true,"  ",true,nil}
+	marshlr.Marshal(w, badgerStream(prefix))
 }
 
 func secretPut(w http.ResponseWriter, r *http.Request) {
@@ -319,7 +326,7 @@ func main() {
 	rtr.HandleFunc("/badger/{key}", badgerGet).Methods("GET")
 	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("PUT")
 	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("POST")
-	rtr.HandleFunc("/streamr/{prefix}", badgerStream).Methods("GET")
+	rtr.HandleFunc("/streamr/{prefix}", streamrGet).Methods("GET")
 	rtr.HandleFunc("/secret/{key}", badgerGet).Methods("GET")
 	rtr.HandleFunc("/secret/{key}", secretPut).Methods("PUT")
 	rtr.HandleFunc("/secret/{key}", secretPut).Methods("POST")
