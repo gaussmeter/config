@@ -11,6 +11,7 @@
         var data = [];
         var speed = 0;
         var distance = 0;
+        var temperature = 0;
         $.getJSON("/streamr/ts_", function (stream) {
             total = stream['kv'].length;
             $.each(stream['kv'], function (i, item) {
@@ -29,14 +30,15 @@
                     } else {
                         distance = Math.round(parseInt(state['vehicle_state']['distanceFromHome']) / 5280 * 100) / 100
                     }
-                    data.push([datetime, state['charge_state']['battery_range'], state['charge_state']['charge_rate'], state['charge_state']['battery_level'], distance, speed])
+                    temperature = parseInt(state['climate_state']['outside_temp'])* 9 / 5 + 32;
+                    data.push([datetime, state['charge_state']['battery_range'], state['charge_state']['charge_rate'], state['charge_state']['battery_level'], distance, temperature, speed])
                     if (total - 1 == i) {
                         var g = new Dygraph(document.getElementById("data"), data,
                             {
                                 drawPoints: true,
                                 legend: 'always',
                                 labelsDiv: document.getElementById('legend'),
-                                labels: ['Time', 'Range', 'Charge Rate', 'Percent', 'Distance From Home', 'Speed'],
+                                labels: ['Time', 'Range', 'Charge Rate', 'Percent', 'Distance From Home', 'Outside Temperature', 'Speed'],
                                 labelsSeparateLines: true,
                                 showRangeSelector: true
                             });
