@@ -281,6 +281,7 @@ func main() {
 	var err error
 
 	opts := badger.DefaultOptions
+	//Todo: move to /data/badger
 	opts.Dir = "/tmp/badger"
 	opts.ValueDir = "/tmp/badger"
 	opts.ValueLogLoadingMode = options.FileIO
@@ -299,6 +300,7 @@ func main() {
 	}
 	defer CLI.Close()
 
+	//Todo: move these to an init service/script
 	putDefault("tHome","37.4919392,-121.9469367")
 	putDefault("tHomeRadiusFt","100")
 	putDefault("tWork","37.4919392,-121.9469367")
@@ -322,6 +324,11 @@ func main() {
 	//tEmailAdr
 	//tPassword
 
+	//Todo:
+	//  /value
+	//  /secret
+	//  /stream
+
 	rtr := mux.NewRouter()
 	rtr.HandleFunc("/badger/{key}", badgerGet).Methods("GET")
 	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("PUT")
@@ -331,9 +338,7 @@ func main() {
 	rtr.HandleFunc("/secret/{key}", secretPut).Methods("PUT")
 	rtr.HandleFunc("/secret/{key}", secretPut).Methods("POST")
 	rtr.HandleFunc("/start/{name}", startService).Methods("POST")
-	rtr.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 	http.Handle("/", rtr)
-
+	//Todo: change to 8080
 	log.Fatal(http.ListenAndServe(":8443",nil))
-	//log.Fatal(http.ListenAndServeTLS(":8443", "server.crt", "server.key", nil))
 }
