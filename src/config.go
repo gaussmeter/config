@@ -334,6 +334,6 @@ func main() {
 	rtr.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 	http.Handle("/", rtr)
 
-	log.Fatal(http.ListenAndServeTLS(":8443", "server.crt", "server.key", nil))
-	log.Fatal(http.ListenAndServe(":8080",nil))
+	log.Fatal(http.ListenAndServe(":8443",nil))
+	//log.Fatal(http.ListenAndServeTLS(":8443", "server.crt", "server.key", nil))
 }
