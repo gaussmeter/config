@@ -6,12 +6,8 @@ import (
 	"github.com/dgraph-io/badger"
 	"github.com/dgraph-io/badger/options"
 	"github.com/dgraph-io/badger/pb"
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/swarm"
-	"github.com/docker/docker/client"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/gorilla/mux"
-	"github.com/rs/xid"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -24,101 +20,7 @@ import (
 
 var (
 	DB *badger.DB
-	CLI *client.Client
 )
-
-
-func createSecret(secretString string, secretName string) string {
-	secretannotation := swarm.Annotations{Name: secretName, Labels: nil}
-	secretdata := []byte(secretString)
-	response, err := CLI.SecretCreate(context.Background(), swarm.SecretSpec{
-		secretannotation, secretdata, nil, nil,
-	})
-	if err != nil {
-		log.Print(err)
-		return ""
-	}
-	return response.ID
-}
-
-func createService(serviceName string, imageName string) string {
-
-	var serviceSpec swarm.ServiceSpec
-	containerSpec := &swarm.ContainerSpec{Image: imageName}
-	serviceSpec.TaskTemplate.ContainerSpec = containerSpec
-	networkAttachmentConfig := swarm.NetworkAttachmentConfig{Target: getNetworkID("gaussnet")} //Todo gaussnet -> ??net
-	serviceSpec.TaskTemplate.Networks = append(serviceSpec.TaskTemplate.Networks, networkAttachmentConfig)
-	annotations := swarm.Annotations{Name: serviceName}
-	serviceSpec.Annotations = annotations
-	fileMode := os.FileMode(uint32(0))
-	secretReferenceFileTarget := &swarm.SecretReferenceFileTarget{"/var/run/secrets/tPassword", "0", "0", fileMode}
-	secret := &swarm.SecretReference{File: secretReferenceFileTarget, SecretID: getSecretID(strings.Split(getValue("tPassword"),"docker-secret:")[1]), SecretName: strings.Split(getValue("tPassword"),"docker-secret:")[1]}
-	serviceSpec.TaskTemplate.ContainerSpec.Secrets = append(serviceSpec.TaskTemplate.ContainerSpec.Secrets, secret)
-
-	var serviceCreateOptions types.ServiceCreateOptions
-	response, err := CLI.ServiceCreate(context.Background(), serviceSpec, serviceCreateOptions)
-	if err != nil {
-		log.Print(err)
-		return ""
-	}
-	return response.ID
-}
-
-func deleteSecret(secretName string) {
-	err := CLI.SecretRemove(context.Background(), getSecretID(secretName))
-	if err != nil {
-		log.Print(err)
-	}
-}
-
-func deleteService(serviceName string) {
-	err := CLI.ServiceRemove(context.Background(), getServiceID(serviceName))
-	if err != nil {
-		log.Print(err)
-	}
-}
-
-func getSecretID(secretName string) string {
-	secrets, err := CLI.SecretList(context.Background(), types.SecretListOptions{})
-	if err != nil {
-		log.Print(err)
-		return ""
-	}
-	for _, secret := range secrets {
-		if secret.Spec.Name == secretName {
-			return secret.ID
-		}
-	}
-	return ""
-}
-
-func getServiceID(secretName string) string {
-	services, err := CLI.ServiceList(context.Background(), types.ServiceListOptions{})
-	if err != nil {
-		log.Print(err)
-		return ""
-	}
-	for _, service := range services {
-		if service.Spec.Name == secretName {
-			return service.ID
-		}
-	}
-	return ""
-}
-
-func getNetworkID(networkName string) string {
-	networks, err := CLI.NetworkList(context.Background(), types.NetworkListOptions{})
-	if err != nil {
-		log.Print(err)
-		return ""
-	}
-	for _, network := range networks {
-		if network.Name == networkName {
-			return network.ID
-		}
-	}
-	return ""
-}
 
 func badgerGet(w http.ResponseWriter, r *http.Request) {
 	key := mux.Vars(r)["key"]
@@ -163,34 +65,35 @@ func badgerStream(prefix string) *pb.KVList {
 
 func streamrGet(w http.ResponseWriter, r *http.Request){
 	prefix := mux.Vars(r)["prefix"]
+	secretIndex := strings.Index(prefix, "secret:")
 	log.Printf("streamr GET prefix: %s", prefix)
-	marshlr := &jsonpb.Marshaler{true,true,"  ",true,nil}
-	marshlr.Marshal(w, badgerStream(prefix))
+	if secretIndex == 0 {
+		fmt.Fprintf(w,"nope")
+	} else {
+		marshlr := &jsonpb.Marshaler{true,true,"  ",true,nil}
+		marshlr.Marshal(w, badgerStream(prefix))
+	}
 }
 
 func secretPut(w http.ResponseWriter, r *http.Request) {
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil { panic(err) }
 	key := mux.Vars(r)["key"]
-  id := xid.New()
-	createSecret(string(data),id.String())
-  putValue(key,"docker-secret:"+id.String())
-	fmt.Fprintf(w,"docker-secret:%s",id.String())
-	log.Printf("secret PUT Badger Key: %s Docker Secret: %s \n",key,id.String())
-  // ToDo: implement a metod for cleaning up old versions of secrets.
+  putValue("secret:"+key,string(data))
+	fmt.Fprintf(w,"ok")
+	log.Printf("secret PUT Key: %s Value: [REDACTED] \n",key)
 }
 
-func startService(w http.ResponseWriter, r *http.Request) {
-	name := mux.Vars(r)["name"]
-	if name == "query" {
-		//Todo: change this to update if exists -or- create
-		deleteService("query")
-		createService("query", "gaussmeter/query")
-		fmt.Fprintf(w, "ok")
-	} else {
-		fmt.Fprintf(w, "nothing to start...")
+func secretGet(w http.ResponseWriter, r *http.Request) {
+	key := mux.Vars(r)["key"]
+	secretIndex := strings.Index(key, "secret:")
+	log.Printf("index %d \n", secretIndex)
+	data := ""
+	if secretIndex != 0 {
+		data = getValue("secret:"+key)
 	}
-	log.Printf("Starting %s",name)
+	fmt.Fprintf(w,"%s",data)
+	log.Printf("secret GET Key: %s Value: [REDACTED] \n",key)
 }
 
 func putValue(key string, val string) {
@@ -255,8 +158,6 @@ func main() {
 			if (sig == os.Interrupt) || (sig == syscall.SIGTERM) {
 				log.Print("Stopping Badger")
 				DB.Close()
-				log.Print("Closing Docker Client")
-				CLI.Close()
 				log.Print("Exiting")
 				os.Exit(0)
 
@@ -294,12 +195,6 @@ func main() {
 	}
 	defer DB.Close()
 
-	CLI, err = client.NewClientWithOpts(client.WithVersion("1.38"))
-	if err != nil {
-		panic(err)
-	}
-	defer CLI.Close()
-
 	//Todo: move these to an init service/script
 	putDefault("tHome","37.4919392,-121.9469367")
 	putDefault("tHomeRadiusFt","100")
@@ -334,10 +229,9 @@ func main() {
 	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("PUT")
 	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("POST")
 	rtr.HandleFunc("/streamr/{prefix}", streamrGet).Methods("GET")
-	rtr.HandleFunc("/secret/{key}", badgerGet).Methods("GET")
+	rtr.HandleFunc("/secret/{key}", secretGet).Methods("GET")
 	rtr.HandleFunc("/secret/{key}", secretPut).Methods("PUT")
 	rtr.HandleFunc("/secret/{key}", secretPut).Methods("POST")
-	rtr.HandleFunc("/start/{name}", startService).Methods("POST")
 	http.Handle("/", rtr)
 	//Todo: change to 8080
 	log.Fatal(http.ListenAndServe(":8443",nil))
