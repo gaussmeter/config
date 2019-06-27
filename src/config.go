@@ -226,12 +226,10 @@ func main() {
 
 	rtr := mux.NewRouter()
 	rtr.HandleFunc("/badger/{key}", badgerGet).Methods("GET")
-	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("PUT")
-	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("POST")
+	rtr.HandleFunc("/badger/{key}", badgerPut).Methods("POST","PUT")
 	rtr.HandleFunc("/streamr/{prefix}", streamrGet).Methods("GET")
 	rtr.HandleFunc("/secret/{key}", secretGet).Methods("GET")
-	rtr.HandleFunc("/secret/{key}", secretPut).Methods("PUT")
-	rtr.HandleFunc("/secret/{key}", secretPut).Methods("POST")
+	rtr.HandleFunc("/secret/{key}", secretPut).Methods("POST","PUT")
 	http.Handle("/", rtr)
 	//Todo: change to 8080
 	log.Fatal(http.ListenAndServe(":8443",nil))
