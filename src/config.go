@@ -24,9 +24,23 @@ var (
 
 func badgerGet(w http.ResponseWriter, r *http.Request) {
 	key := mux.Vars(r)["key"]
-	data := getValue(key)
+	log.Printf("GET key: %s \n", key)
+	if strings.Index(key, "secret:") == 0 {
+		w.WriteHeader(http.StatusForbidden)
+		log.Printf("secrets forbidden \n")
+		return
+	}
+	data, err := getValue(key)
+	switch err {
+	case nil:
+		w.WriteHeader(http.StatusOK)
+	case badger.ErrKeyNotFound:
+		w.WriteHeader(http.StatusNotFound)
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 	fmt.Fprintf(w,"%s",data)
-	log.Printf("badger GET Key: %s Value: %s \n",key,data)
+	log.Printf("Got Value: %s \n",data)
 }
 
 func badgerPut(w http.ResponseWriter, r *http.Request) {
@@ -65,14 +79,14 @@ func badgerStream(prefix string) *pb.KVList {
 
 func streamrGet(w http.ResponseWriter, r *http.Request){
 	prefix := mux.Vars(r)["prefix"]
-	secretIndex := strings.Index(prefix, "secret:")
 	log.Printf("streamr GET prefix: %s", prefix)
-	if secretIndex == 0 {
-		fmt.Fprintf(w,"nope")
-	} else {
-		marshlr := &jsonpb.Marshaler{true,true,"  ",true,nil}
-		marshlr.Marshal(w, badgerStream(prefix))
+	if strings.Index(prefix, "secret:") == 0 {
+		w.WriteHeader(http.StatusForbidden)
+		log.Printf("secrets forbidden \n")
+		return
 	}
+	marshlr := &jsonpb.Marshaler{true,true,"  ",true,nil}
+	marshlr.Marshal(w, badgerStream(prefix))
 }
 
 func secretPut(w http.ResponseWriter, r *http.Request) {
@@ -86,11 +100,14 @@ func secretPut(w http.ResponseWriter, r *http.Request) {
 
 func secretGet(w http.ResponseWriter, r *http.Request) {
 	key := mux.Vars(r)["key"]
-	secretIndex := strings.Index(key, "secret:")
-	log.Printf("index %d \n", secretIndex)
-	data := ""
-	if secretIndex != 0 {
-		data = getValue("secret:"+key)
+	data, err := getValue("secret:"+key)
+	switch err {
+	case nil:
+		w.WriteHeader(http.StatusOK)
+	case badger.ErrKeyNotFound:
+		w.WriteHeader(http.StatusNotFound)
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 	fmt.Fprintf(w,"%s",data)
 	log.Printf("secret GET Key: %s Value: [REDACTED] \n",key)
@@ -108,7 +125,7 @@ func putValue(key string, val string) {
 	}
 }
 
-func getValue(key string) string{
+func getValue(key string) (value string, err error){
 	txn := DB.NewTransaction(false)
 	item, err := txn.Get([]byte(key))
 	if err != nil {
@@ -117,20 +134,20 @@ func getValue(key string) string{
 	}
 	val, err := item.ValueCopy(nil)
 	if err != nil {log.Fatal(err)}
-	return string(val)
+	return string(val), nil
 }
 
-func getDefault(key string) string{
+func getDefault(key string) (value string, err error){
 	txn := DB.NewTransaction(false)
 	key = "default:"+key
 	item, err := txn.Get([]byte(key))
 	if err != nil {
 		log.Print(err.Error() + " - " + key )
-		return ""
+		return "", err
 	}
 	val, err := item.ValueCopy(nil)
 	if err != nil {log.Fatal(err)}
-	return string(val)
+	return string(val), nil
 }
 
 func putDefault(key string, val string) {
