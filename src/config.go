@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/dgraph-io/badger"
 	"github.com/dgraph-io/badger/options"
@@ -17,6 +19,44 @@ import (
 	"syscall"
 	"time"
 )
+
+// ['data_state']['isGood']
+type DataState struct {
+	IsGood bool `json:"isGood"`
+}
+
+// ['drive_state']['speed']
+type DriveState struct {
+	Speed float64 `json:"speed"`
+}
+
+// ['vehicle_state']['distanceFromHome']
+// ['state']['distanceFromHome']
+type VehicleState struct {
+	DistanceFromHome float64 `json:"distanceFromHome"`
+}
+
+// ['climate_state']['outside_temp']
+type ClimateState struct {
+	OutsideTemp float64 `json:"outside_temp"`
+}
+
+//['charge_state']['battery_range']
+//['charge_state']['charge_rate']
+//['charge_state']['battery_level']
+type ChargeState struct {
+	BatteryRange float64 `json:"battery_range"`
+	ChargeRate float64 `json:"charge_rate"`
+	BatteryLevel float64 `json:"battery_level"`
+}
+
+type TState struct {
+	DataState  DataState `json:"data_state"`
+  DriveState DriveState `json:"drive_state"`
+	VehicleState  VehicleState  `json:"state"`
+	ClimateState ClimateState `json:"climate_state"`
+	ChargeState ChargeState `json:"charge_state"`
+}
 
 var (
 	DB *badger.DB
@@ -54,6 +94,46 @@ func badgerPut(w http.ResponseWriter, r *http.Request) {
 	log.Printf("badger PUT Key: %s Value: %s \n",key,data)
 }
 
+//func (st *badger.Stream) customToList(key []byte, itr *badger.Iterator) (*pb.KVList, error) {
+func customToList(key []byte, itr *badger.Iterator) (*pb.KVList, error) {
+	//var jsontesting testing
+	var state TState
+	list := &pb.KVList{}
+	for ; itr.Valid(); itr.Next() {
+		item := itr.Item()
+		if item.IsDeletedOrExpired() {
+			break
+		}
+		if !bytes.Equal(key, item.Key()) {
+			// Break out on the first encounter with another key.
+			break
+		}
+
+		valCopy, err := item.ValueCopy(nil)
+		json.Unmarshal(valCopy, &state)
+		valCopy, err = json.Marshal(state)
+		if err != nil {
+			return nil, err
+		}
+		//log.Printf("%s", valCopy)
+		kv := &pb.KV{
+			Key:       item.KeyCopy(nil),
+			Value:     valCopy,
+			UserMeta:  []byte{item.UserMeta()},
+			Version:   item.Version(),
+			ExpiresAt: item.ExpiresAt(),
+		}
+		list.Kv = append(list.Kv, kv)
+		//got a value move on...
+		break
+
+		if item.DiscardEarlierVersions() {
+			break
+		}
+	}
+	return list, nil
+}
+
 func badgerStream(prefix string) *pb.KVList {
 	stream := DB.NewStream()
 
@@ -68,6 +148,8 @@ func badgerStream(prefix string) *pb.KVList {
 		fullList.Kv = append(fullList.Kv, list.Kv...)
 		return nil
 	}
+
+	stream.KeyToList = customToList
 
 	// Run the stream
 	if err := stream.Orchestrate(context.Background()); err != nil {
