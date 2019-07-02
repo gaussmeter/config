@@ -20,6 +20,11 @@ import (
 	"time"
 )
 
+// Todo: find a way to make these structs dymanic.
+//  ideally a ?json? template would be passed to streamr
+//  and streamr would pass back values that fit
+//  within the template.
+
 // ['data_state']['isGood']
 type DataState struct {
 	IsGood bool `json:"isGood"`
