@@ -1,13 +1,12 @@
 FROM golang AS builder
-RUN mkdir -p /go/src/github.com/docker/ && \
-    cd /go/src/github.com/docker && \
-    git clone --depth 1 https://github.com/docker/docker && \
-    mkdir -p /go/src/github.com/gorilla/ && \
+RUN mkdir -p /go/src/github.com/gorilla/ && \
     cd /go/src/github.com/gorilla && \
     git clone --depth 1 https://github.com/gorilla/mux && \
     mkdir -p /go/src/github.com/dgraph-io/ && \
     cd /go/src/github.com/dgraph-io && \
-    git clone --depth 1 https://github.com/dgraph-io/badger && \
+    git clone https://github.com/dgraph-io/badger && \
+    cd /go/src/github.com/dgraph-io/badger && \
+    git checkout v1.6.0 && \
     mkdir -p /go/src/github.com/AndreasBriese/ && \
     cd /go/src/github.com/AndreasBriese && \
     git clone --depth 1 https://github.com/AndreasBriese/bbloom && \
