@@ -291,30 +291,6 @@ func main() {
 	}
 	defer DB.Close()
 
-	//Todo: move these to an init service/script
-	putDefault("tHome","37.4919392,-121.9469367")
-	putDefault("tHomeRadiusFt","100")
-	putDefault("tWork","37.4919392,-121.9469367")
-	putDefault("tWorkRadiusFt","100")
-	putDefault("tChargeRangeFull", "270")
-	putDefault("tChargeRangeMedium","100")
-	putDefault("tChargeRangeLow","30")
-	putDefault("eIHIP","fill")
-	putDefault("eIHNP","fill")
-	putDefault("eIHNPBCRM","fill")
-	putDefault("eNH","rainbow")
-	putDefault("cIHIP","0,0,0,255")
-	putDefault("cIHNP","0,0,0,255")
-	putDefault("cIHNPBCRM","0,0,0,255")
-	putDefault("cNH","0,0,0,255")
-	putDefault("tGetStateInterval","14400")
-	putDefault("tSoftStateInterval","600")
-	putDefault("tGetStateIntervalDriving","30")
-	putDefault("tGetStateIntervalCharging","60")
-	putDefault("tVehicle","0")
-	//tEmailAdr
-	//tPassword
-
 	//Todo:
 	//  /value
 	//  /secret
