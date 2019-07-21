@@ -198,7 +198,7 @@ func main() {
 	var err error
 
 	//Todo: move to /data/badger
-	DB, err = badger.Open(badger.DefaultOptions("tmp/badger"))
+	DB, err = badger.Open(badger.DefaultOptions("/tmp/badger"))
 	if err != nil {
 		log.Fatal(err)
 	}
