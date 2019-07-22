@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/dgraph-io/badger"
+	"github.com/dgraph-io/badger/options"
 	"github.com/dgraph-io/badger/pb"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/gorilla/mux"
@@ -198,7 +199,12 @@ func main() {
 	var err error
 
 	//Todo: move to /data/badger
-	DB, err = badger.Open(badger.DefaultOptions("/tmp/badger"))
+	opts := badger.DefaultOptions("/tmp/badger")
+	opts.ValueLogLoadingMode = options.FileIO
+	opts.NumMemtables = 2
+	opts.NumLevelZeroTables = 2
+	opts.NumLevelZeroTablesStall = 4
+	DB, err = badger.Open(opts)
 	if err != nil {
 		log.Fatal(err)
 	}
