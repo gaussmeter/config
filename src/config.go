@@ -201,9 +201,9 @@ func main() {
 	//Todo: move to /data/badger
 	opts := badger.DefaultOptions("/tmp/badger")
 	opts.ValueLogLoadingMode = options.FileIO
-	opts.NumMemtables = 2
-	opts.NumLevelZeroTables = 2
-	opts.NumLevelZeroTablesStall = 4
+	opts.NumMemtables = 1
+	opts.NumLevelZeroTables = 1
+	opts.NumLevelZeroTablesStall = 2
 	DB, err = badger.Open(opts)
 	if err != nil {
 		log.Fatal(err)
